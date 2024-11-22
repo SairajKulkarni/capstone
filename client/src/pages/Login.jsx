@@ -4,7 +4,6 @@ import {
   Button,
   FormControl,
   FormHelperText,
-  FormLabel,
   TextField,
   Typography,
 } from "@mui/material";
@@ -13,10 +12,13 @@ import { Link } from "react-router-dom";
 
 import PasswordField from "../components/PasswordField";
 
+import Logo from "../assets/network-icon-1897-Windows.ico";
+
 const BackgroundBox = styled(Box)({
   width: "100vw",
   height: "100vh",
-  backgroundColor: "red",
+  background:
+    "url(https://images.unsplash.com/photo-1666725257093-e2f1eebf4f5e?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D) red",
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
@@ -26,6 +28,7 @@ const LoginForm = styled("form")({
   width: "30vw",
   height: "75vh",
   backgroundColor: "white",
+  borderRadius: "20px",
   display: "flex",
   flexDirection: "column",
   justifyContent: "center",
@@ -40,13 +43,14 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setError((prev) => !prev);
+    // Logic to call login API
   };
 
   return (
     <BackgroundBox>
       <LoginForm autoComplete="off" onSubmit={handleSubmit}>
-        <Typography>Sign In</Typography>
+        <img src={Logo} alt="logo" />
+        <Typography>Login</Typography>
         <FormControl error={error} sx={{ width: "60%" }}>
           <TextField
             autoFocus
@@ -74,7 +78,8 @@ const Login = () => {
           Login
         </Button>
         <Typography fontSize={15}>
-          Don&#39;t have an account? Click <Link to={"/signup"}>here</Link> to sign up instead.
+          Don&#39;t have an account? Click <Link to={"/signup"}>here</Link> to
+          sign up instead.
         </Typography>
       </LoginForm>
     </BackgroundBox>
