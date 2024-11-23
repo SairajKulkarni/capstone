@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { SnackbarProvider } from "notistack";
 
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -10,8 +11,12 @@ import "./index.css";
 
 const router = createBrowserRouter([
   {
-    path: "/",
-    element: <Home />,
+    path: "/*",
+    element: (
+      <SnackbarProvider maxSnack={5}>
+        <Home />
+      </SnackbarProvider>
+    ),
     errorElement: <PageNotFound />,
   },
   {

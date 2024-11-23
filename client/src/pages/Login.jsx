@@ -1,7 +1,9 @@
 import { useState } from "react";
 import {
+  Backdrop,
   Box,
   Button,
+  CircularProgress,
   FormControl,
   FormHelperText,
   TextField,
@@ -37,13 +39,21 @@ const LoginForm = styled("form")({
 });
 
 const Login = () => {
-  const [error, setError] = useState(false);
+  const [open, setOpen] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(false);
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+  const handleOpen = () => {
+    setOpen(true);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Logic to call login API
+    // Logic to call login API and to close the backdrop
   };
 
   return (
@@ -74,7 +84,7 @@ const Login = () => {
             </FormHelperText>
           )}
         </FormControl>
-        <Button type="submit" variant="contained">
+        <Button type="submit" variant="contained" onClick={handleOpen}>
           Login
         </Button>
         <Typography fontSize={15}>
@@ -82,6 +92,13 @@ const Login = () => {
           sign up instead.
         </Typography>
       </LoginForm>
+      <Backdrop
+        sx={{ color: "#fff" }}
+        open={open}
+        onClick={handleClose}
+      >
+        <CircularProgress color="white" />
+      </Backdrop>
     </BackgroundBox>
   );
 };

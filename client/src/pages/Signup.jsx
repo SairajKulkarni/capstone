@@ -1,9 +1,13 @@
 import { useState } from "react";
 import {
+  Backdrop,
   Box,
   Button,
+  CircularProgress,
   FormControl,
   FormHelperText,
+  List,
+  ListItem,
   TextField,
   Typography,
 } from "@mui/material";
@@ -38,12 +42,20 @@ const SignupForm = styled("form")({
 });
 
 const Signup = () => {
+  const [open, setOpen] = useState(false);
   const [usernameError, setUsernameError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
   const [confirmPasswordError, setConfirmPasswordError] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+  const handleOpen = () => {
+    setOpen(true);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -55,7 +67,8 @@ const Signup = () => {
       setConfirmPasswordError(true);
       return;
     }
-    // Logic to call signup API
+    handleOpen();
+    // Logic to call signup API and to close the backdrop
   };
 
   return (
@@ -103,7 +116,9 @@ const Signup = () => {
                 <li>Has at least one small letter</li>
                 <li>Has at least one capital letter</li>
                 <li>Has at least one number</li>
-                <li>Has at least one special character (#, @, or &)</li>
+                <li>
+                  Has at least one special character (#, @, or &)
+                </li>
               </ul>
             </FormHelperText>
           )}
@@ -132,6 +147,13 @@ const Signup = () => {
           login instead.
         </Typography>
       </SignupForm>
+      <Backdrop
+        sx={{ color: "#fff", zIndex: 1 }}
+        open={open}
+        onClick={handleClose}
+      >
+        <CircularProgress color="white" />
+      </Backdrop>
     </BackgroundBox>
   );
 };
