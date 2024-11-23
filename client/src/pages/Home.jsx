@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import {
-  Alert,
   AppBar,
   Autocomplete,
   Avatar,
@@ -25,7 +24,6 @@ import {
   Radio,
   RadioGroup,
   Skeleton,
-  Snackbar,
   TextField,
   Toolbar,
   Typography,
@@ -38,39 +36,6 @@ import { useSnackbar } from "notistack";
 import { friends, skills, recommendations } from "../utils/dummyData.js";
 import stringAvatar from "../utils/avatarString.js";
 
-const HomeBox = styled(Box)({
-  height: "100vh",
-  width: "100vw",
-});
-
-const HomeLayoutBox = styled(Box)({
-  height: "calc(100vh - 64px)",
-  width: "100vw",
-  background: "white",
-  display: "flex",
-});
-
-const FriendsPaper = styled(Paper)({
-  height: "100%",
-  width: "25%",
-});
-
-const ContentBox = styled(Box)({
-  height: "100%",
-  width: "75%",
-  padding: "20px",
-  // background: "red"
-});
-
-const FriendsList = styled(List)({
-  height: "90%",
-  overflowY: "scroll",
-});
-
-const FriendsListItem = styled(ListItem)({
-  display: "flex",
-});
-
 const RecommendationsBox = styled(Box)({
   marginTop: "20px",
   display: "flex",
@@ -79,15 +44,6 @@ const RecommendationsBox = styled(Box)({
   gap: "20px",
   height: "80%",
   overflowY: "auto",
-  // paddingTop: "150px",
-});
-
-const RecommendedUserPaper = styled(Paper)({
-  display: "flex",
-  flexDirection: "row",
-  width: "90%",
-  padding: "20px",
-  // height: "200px",
 });
 
 const NavBar = () => {
@@ -103,13 +59,14 @@ const NavBar = () => {
   return (
     <AppBar position="static">
       <Toolbar>
-        <IconButton
+        {/* May be useful later */}
+        {/* <IconButton
           size="large"
           edge="start"
           sx={{ color: "white", mr: "20px" }}
         >
           <MenuIcon />
-        </IconButton>
+        </IconButton> */}
         <Typography variant="h6" sx={{ flexGrow: 1 }}>
           Skill Connect
         </Typography>
@@ -133,21 +90,49 @@ const NavBar = () => {
 };
 
 const ConnectionsSection = () => {
+  const [connections, setConnections] = useState([]);
+  const [connectionsLoading, setConnectionsLoading] = useState(false);
+
+  useEffect(() => {
+    const getConnections = async () => {
+      setConnectionsLoading(true);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Get connections through an API
+      setConnections(friends);
+      setConnectionsLoading(false);
+    };
+
+    getConnections();
+  }, []);
+
   return (
-    <FriendsPaper elevation={3}>
+    <Paper elevation={3} style={{ height: "100%", width: "25%" }}>
       <Typography variant="h6" align="center" padding={2}>
         Your Connections
       </Typography>
-      <FriendsList>
-        {friends.map((friend) => (
-          <FriendsListItem key={friend._id}>
-            <Avatar {...stringAvatar(friend.name)} />
-            <Typography sx={{ flexGrow: 1 }}>{friend.name}</Typography>
-            <Typography>{friend.score}</Typography>
-          </FriendsListItem>
-        ))}
-      </FriendsList>
-    </FriendsPaper>
+      {connectionsLoading && (
+        <Box
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "20px",
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      )}
+      {!connectionsLoading && connections.length !== 0 && (
+        <List style={{ height: "90%", overflowY: "auto" }}>
+          {connections.map((conn) => (
+            <ListItem key={conn._id} style={{ display: "flex" }}>
+              <Avatar {...stringAvatar(conn.name)} />
+              <Typography sx={{ flexGrow: 1 }}>{conn.name}</Typography>
+              <Typography>{conn.score}</Typography>
+            </ListItem>
+          ))}
+        </List>
+      )}
+    </Paper>
   );
 };
 
@@ -235,7 +220,7 @@ const Home = () => {
         addSnackbar("User not found.", "error");
         break;
       case 400:
-        addSnackbar(`You were already connected with ${name}`, "info");
+        addSnackbar(`You were already connected to ${name}`, "info");
         break;
       case 500:
         addSnackbar("Error connecting users.", "error");
@@ -246,19 +231,24 @@ const Home = () => {
   };
 
   return (
-    <HomeBox>
+    <Box height="100vh" width="100vw">
       {/* Navigation bar */}
       <NavBar />
 
       {/* Main body */}
-      <HomeLayoutBox>
+      <Box
+        style={{
+          height: "calc(100vh - 64px)",
+          width: "100vw",
+          display: "flex",
+        }}
+      >
         {/* Side section to show user's connections */}
         <ConnectionsSection />
 
         {/* Main content */}
-        <ContentBox>
-        
-          {/* Form to get user recommendations. State functions to passed to set values */}
+        <Box style={{ height: "100%", width: "75%", padding: "20px" }}>
+          {/* Form to get user recommendations. State functions passed to set values */}
           <RecommendationsForm
             setRecommendationsLoading={setRecommendationsLoading}
             setRecommendedUsers={setRecommendedUsers}
@@ -325,16 +315,15 @@ const Home = () => {
                         >
                           Connect
                         </Button>
-                        <Button variant="contained">View</Button>
                       </CardActions>
                     </Card>
                   </Grid2>
                 ))}
             </Grid2>
           </RecommendationsBox>
-        </ContentBox>
-      </HomeLayoutBox>
-    </HomeBox>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 
