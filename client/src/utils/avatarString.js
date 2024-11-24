@@ -16,10 +16,10 @@ const stringToColor = (string) => {
   return color;
 };
 
-const stringAvatar = (name) => {
+const stringAvatar = (name, style = {}) => {
   return {
     sx: {
-      mr: 3,
+      ...style,
       bgcolor: stringToColor(name),
     },
     children: `${name.split(" ")[0][0]}${name.split(" ")[1][0]}`,

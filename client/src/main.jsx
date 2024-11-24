@@ -8,15 +8,12 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import PageNotFound from "./pages/PageNotFound";
 import "./index.css";
+import Profile from "./pages/Profile";
 
 const router = createBrowserRouter([
   {
     path: "/*",
-    element: (
-      <SnackbarProvider maxSnack={5}>
-        <Home />
-      </SnackbarProvider>
-    ),
+    element: <Home />,
     errorElement: <PageNotFound />,
   },
   {
@@ -27,10 +24,16 @@ const router = createBrowserRouter([
     path: "/signup",
     element: <Signup />,
   },
+  {
+    path: "/profile",
+    element: <Profile />,
+  },
 ]);
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <SnackbarProvider maxSnack={2}>
+      <RouterProvider router={router} />
+    </SnackbarProvider>
   </StrictMode>
 );

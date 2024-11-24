@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  Backdrop,
   Box,
   Button,
   CircularProgress,
@@ -39,21 +38,15 @@ const LoginForm = styled("form")({
 });
 
 const Login = () => {
-  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
 
-  const handleClose = () => {
-    setOpen(false);
-  };
-  const handleOpen = () => {
-    setOpen(true);
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Logic to call login API and to close the backdrop
+    setLoading(true);
+    // Logic to call login API
   };
 
   return (
@@ -84,21 +77,18 @@ const Login = () => {
             </FormHelperText>
           )}
         </FormControl>
-        <Button type="submit" variant="contained" onClick={handleOpen}>
-          Login
-        </Button>
+        {loading ? (
+          <CircularProgress />
+        ) : (
+          <Button type="submit" variant="contained">
+            Login
+          </Button>
+        )}
         <Typography fontSize={15}>
           Don&#39;t have an account? Click <Link to={"/signup"}>here</Link> to
           sign up instead.
         </Typography>
       </LoginForm>
-      <Backdrop
-        sx={{ color: "#fff" }}
-        open={open}
-        onClick={handleClose}
-      >
-        <CircularProgress color="white" />
-      </Backdrop>
     </BackgroundBox>
   );
 };

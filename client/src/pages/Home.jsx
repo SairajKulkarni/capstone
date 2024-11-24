@@ -29,12 +29,13 @@ import {
   Typography,
 } from "@mui/material";
 import styled from "@emotion/styled";
-import MenuIcon from "@mui/icons-material/Menu";
+// import MenuIcon from "@mui/icons-material/Menu";
 import { AccountCircle } from "@mui/icons-material";
-import { useSnackbar } from "notistack";
+import { enqueueSnackbar, useSnackbar } from "notistack";
 
 import { friends, skills, recommendations } from "../utils/dummyData.js";
 import stringAvatar from "../utils/avatarString.js";
+import { Link } from "react-router-dom";
 
 const RecommendationsBox = styled(Box)({
   marginTop: "20px",
@@ -46,163 +47,11 @@ const RecommendationsBox = styled(Box)({
   overflowY: "auto",
 });
 
-const NavBar = () => {
-  const [accountAnchorEl, setAccountAnchorEl] = useState(null);
-  const open = Boolean(accountAnchorEl);
-  const handleOpen = (e) => {
-    setAccountAnchorEl(e.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAccountAnchorEl(null);
-  };
-  return (
-    <AppBar position="static">
-      <Toolbar>
-        {/* May be useful later */}
-        {/* <IconButton
-          size="large"
-          edge="start"
-          sx={{ color: "white", mr: "20px" }}
-        >
-          <MenuIcon />
-        </IconButton> */}
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
-          Skill Connect
-        </Typography>
-        <Box>
-          <IconButton
-            size="large"
-            edge="end"
-            sx={{ color: "white" }}
-            onClick={handleOpen}
-          >
-            <AccountCircle fontSize="large" />
-          </IconButton>
-        </Box>
-        <Menu anchorEl={accountAnchorEl} open={open} onClose={handleClose}>
-          <MenuItem>Profile</MenuItem>
-          <MenuItem>Logout</MenuItem>
-        </Menu>
-      </Toolbar>
-    </AppBar>
-  );
-};
-
-const ConnectionsSection = () => {
-  const [connections, setConnections] = useState([]);
-  const [connectionsLoading, setConnectionsLoading] = useState(false);
-
-  useEffect(() => {
-    const getConnections = async () => {
-      setConnectionsLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      // Get connections through an API
-      setConnections(friends);
-      setConnectionsLoading(false);
-    };
-
-    getConnections();
-  }, []);
-
-  return (
-    <Paper elevation={3} style={{ height: "100%", width: "25%" }}>
-      <Typography variant="h6" align="center" padding={2}>
-        Your Connections
-      </Typography>
-      {connectionsLoading && (
-        <Box
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: "20px",
-          }}
-        >
-          <CircularProgress />
-        </Box>
-      )}
-      {!connectionsLoading && connections.length !== 0 && (
-        <List style={{ height: "90%", overflowY: "auto" }}>
-          {connections.map((conn) => (
-            <ListItem key={conn._id} style={{ display: "flex" }}>
-              <Avatar {...stringAvatar(conn.name)} />
-              <Typography sx={{ flexGrow: 1 }}>{conn.name}</Typography>
-              <Typography>{conn.score}</Typography>
-            </ListItem>
-          ))}
-        </List>
-      )}
-    </Paper>
-  );
-};
-
-const RecommendationsForm = ({
-  setRecommendationsLoading,
-  setRecommendedUsers,
-}) => {
-  const [searchType, setSearchType] = useState("1");
-  const [selectedSkills, setSelectedSkills] = useState([]);
-
-  const handleRadioChange = (e) => {
-    setSearchType(e.target.value);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setRecommendationsLoading(true);
-    // Get recommendations through API
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // Timeout to test loading screen
-    setRecommendedUsers(recommendations);
-    setRecommendationsLoading(false);
-  };
-  return (
-    <form autoComplete="off" onSubmit={handleSubmit}>
-      <FormControl>
-        <Box style={{ display: "flex", gap: "20px", alignItems: "center" }}>
-          <Typography variant="h6">Recommend By</Typography>
-          <RadioGroup row value={searchType} onChange={handleRadioChange}>
-            <FormControlLabel value="1" control={<Radio />} label="Interest" />
-            <FormControlLabel value="2" control={<Radio />} label="Level" />
-            <FormControlLabel value="3" control={<Radio />} label="Both" />
-          </RadioGroup>
-        </Box>
-        <Box style={{ display: "flex", gap: "20px", alignItems: "center" }}>
-          <Autocomplete
-            multiple
-            freeSolo
-            options={skills}
-            value={selectedSkills}
-            disabled={searchType === "2"}
-            onChange={(e, value) => setSelectedSkills(value)}
-            sx={{ width: 300 }}
-            renderInput={(params) => <TextField {...params} label="Skill" />}
-          />
-          <Button type="submit" variant="contained">
-            Search
-          </Button>
-        </Box>
-        <FormHelperText>
-          If skill not found, type it and press Enter to add it manually.
-        </FormHelperText>
-      </FormControl>
-    </form>
-  );
-};
-
-RecommendationsForm.propTypes = {
-  setRecommendationsLoading: PropTypes.func,
-  setRecommendedUsers: PropTypes.func,
-};
-
 const Home = () => {
   const { enqueueSnackbar } = useSnackbar();
 
   const [recommendationsLoading, setRecommendationsLoading] = useState(false);
   const [recommendedUsers, setRecommendedUsers] = useState([]);
-
-  const addSnackbar = (message, variant) => {
-    enqueueSnackbar(message, { variant });
-  };
 
   const handleConnectClick = (id, name) => {
     // Get response from API call
@@ -214,16 +63,20 @@ const Home = () => {
     // Notifying users about the result through a snackbar queue
     switch (status) {
       case 200:
-        addSnackbar(`Successfully connected with ${name}.`, "success");
+        enqueueSnackbar(`Successfully connected with ${name}.`, {
+          variant: "success",
+        });
         break;
       case 404:
-        addSnackbar("User not found.", "error");
+        enqueueSnackbar("User not found.", { variant: "error" });
         break;
       case 400:
-        addSnackbar(`You were already connected to ${name}`, "info");
+        enqueueSnackbar(`You were already connected to ${name}`, {
+          variant: "info",
+        });
         break;
       case 500:
-        addSnackbar("Error connecting users.", "error");
+        enqueueSnackbar("Error connecting users.", { variant: "error" });
         break;
       default:
         break;
@@ -325,6 +178,174 @@ const Home = () => {
       </Box>
     </Box>
   );
+};
+
+const NavBar = () => {
+  const [accountAnchorEl, setAccountAnchorEl] = useState(null);
+  const open = Boolean(accountAnchorEl);
+  const handleOpen = (e) => {
+    setAccountAnchorEl(e.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAccountAnchorEl(null);
+  };
+  return (
+    <AppBar position="static">
+      <Toolbar>
+        {/* May be useful later */}
+        {/* <IconButton
+          size="large"
+          edge="start"
+          sx={{ color: "white", mr: "20px" }}
+        >
+          <MenuIcon />
+        </IconButton> */}
+        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+          Skill Connect
+        </Typography>
+        <Box>
+          <IconButton
+            size="large"
+            edge="end"
+            sx={{ color: "white" }}
+            onClick={handleOpen}
+          >
+            <AccountCircle fontSize="large" />
+          </IconButton>
+        </Box>
+        <Menu anchorEl={accountAnchorEl} open={open} onClose={handleClose}>
+          <MenuItem>
+            <Link
+              to={"/profile"}
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              Profile
+            </Link>
+          </MenuItem>
+          <MenuItem>
+            <Link
+              to={"/login"}
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              Logout
+            </Link>
+          </MenuItem>
+        </Menu>
+      </Toolbar>
+    </AppBar>
+  );
+};
+
+const ConnectionsSection = () => {
+  const [connections, setConnections] = useState([]);
+  const [connectionsLoading, setConnectionsLoading] = useState(false);
+
+  useEffect(() => {
+    const getConnections = async () => {
+      setConnectionsLoading(true);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Get connections through an API
+      setConnections(friends);
+      setConnectionsLoading(false);
+    };
+
+    getConnections();
+  }, []);
+
+  return (
+    <Paper elevation={3} style={{ height: "100%", width: "25%" }}>
+      <Typography variant="h6" align="center" padding={2}>
+        Your Connections
+      </Typography>
+      {connectionsLoading && (
+        <Box
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "20px",
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      )}
+      {!connectionsLoading && connections.length !== 0 && (
+        <List style={{ height: "90%", overflowY: "auto" }}>
+          {connections.map((conn) => (
+            <ListItem key={conn._id} style={{ display: "flex" }}>
+              <Avatar {...stringAvatar(conn.name, { mr: 3 })} />
+              <Typography sx={{ flexGrow: 1 }}>{conn.name}</Typography>
+              <Typography>{conn.score}</Typography>
+            </ListItem>
+          ))}
+        </List>
+      )}
+    </Paper>
+  );
+};
+
+const RecommendationsForm = ({
+  setRecommendationsLoading,
+  setRecommendedUsers,
+}) => {
+  const [searchType, setSearchType] = useState("1");
+  const [selectedSkills, setSelectedSkills] = useState([]);
+
+  const handleRadioChange = (e) => {
+    setSearchType(e.target.value);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (searchType !== "2" && selectedSkills.length === 0) {
+      enqueueSnackbar("Select skills to recommend users with.", {
+        variant: "error",
+      });
+      return;
+    }
+    setRecommendationsLoading(true);
+    // Get recommendations through API
+    await new Promise((resolve) => setTimeout(resolve, 1000)); // Timeout to test loading screen
+    setRecommendedUsers(recommendations);
+    setRecommendationsLoading(false);
+  };
+  return (
+    <form autoComplete="off" onSubmit={handleSubmit}>
+      <FormControl>
+        <Box style={{ display: "flex", gap: "20px", alignItems: "center" }}>
+          <Typography variant="h6">Recommend By</Typography>
+          <RadioGroup row value={searchType} onChange={handleRadioChange}>
+            <FormControlLabel value="1" control={<Radio />} label="Interest" />
+            <FormControlLabel value="2" control={<Radio />} label="Level" />
+            <FormControlLabel value="3" control={<Radio />} label="Both" />
+          </RadioGroup>
+        </Box>
+        <Box style={{ display: "flex", gap: "20px", alignItems: "center" }}>
+          <Autocomplete
+            multiple
+            freeSolo
+            options={skills}
+            value={selectedSkills}
+            disabled={searchType === "2"}
+            onChange={(e, value) => setSelectedSkills(value)}
+            sx={{ width: 300 }}
+            renderInput={(params) => <TextField {...params} label="Skill" />}
+          />
+          <Button type="submit" variant="contained">
+            Search
+          </Button>
+        </Box>
+        <FormHelperText>
+          If skill not found, type it and press Enter to add it manually.
+        </FormHelperText>
+      </FormControl>
+    </form>
+  );
+};
+
+RecommendationsForm.propTypes = {
+  setRecommendationsLoading: PropTypes.func,
+  setRecommendedUsers: PropTypes.func,
 };
 
 export default Home;

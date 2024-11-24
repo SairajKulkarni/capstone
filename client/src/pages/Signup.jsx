@@ -1,13 +1,10 @@
 import { useState } from "react";
 import {
-  Backdrop,
   Box,
   Button,
   CircularProgress,
   FormControl,
   FormHelperText,
-  List,
-  ListItem,
   TextField,
   Typography,
 } from "@mui/material";
@@ -42,20 +39,13 @@ const SignupForm = styled("form")({
 });
 
 const Signup = () => {
-  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [usernameError, setUsernameError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
   const [confirmPasswordError, setConfirmPasswordError] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-  const handleOpen = () => {
-    setOpen(true);
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -67,8 +57,8 @@ const Signup = () => {
       setConfirmPasswordError(true);
       return;
     }
-    handleOpen();
-    // Logic to call signup API and to close the backdrop
+    setLoading(true);
+    // Logic to call signup API
   };
 
   return (
@@ -116,18 +106,19 @@ const Signup = () => {
                 <li>Has at least one small letter</li>
                 <li>Has at least one capital letter</li>
                 <li>Has at least one number</li>
-                <li>
-                  Has at least one special character (#, @, or &)
-                </li>
+                <li>Has at least one special character (#, @, or &)</li>
               </ul>
             </FormHelperText>
           )}
         </FormControl>
-        <FormControl error={confirmPasswordError} sx={{ width: "60%" }}>
+        <FormControl
+          error={passwordError || confirmPasswordError}
+          sx={{ width: "60%" }}
+        >
           <PasswordField
             label={"Confirm Password"}
             value={confirmPassword}
-            error={confirmPasswordError}
+            error={passwordError || confirmPasswordError}
             onChange={(e) => {
               setConfirmPassword(e.target.value);
               setConfirmPasswordError(false);
@@ -139,21 +130,18 @@ const Signup = () => {
             </FormHelperText>
           )}
         </FormControl>
-        <Button type="submit" variant="contained">
-          Login
-        </Button>
+        {loading ? (
+          <CircularProgress />
+        ) : (
+          <Button type="submit" variant="contained">
+            Sign up
+          </Button>
+        )}
         <Typography fontSize={15}>
           Already have an account? Click <Link to={"/login"}>here</Link> to
           login instead.
         </Typography>
       </SignupForm>
-      <Backdrop
-        sx={{ color: "#fff", zIndex: 1 }}
-        open={open}
-        onClick={handleClose}
-      >
-        <CircularProgress color="white" />
-      </Backdrop>
     </BackgroundBox>
   );
 };
