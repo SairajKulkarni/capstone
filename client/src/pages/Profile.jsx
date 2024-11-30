@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext } from "react";
+import { useState, useContext } from "react";
 import { Done, Edit, KeyboardBackspace } from "@mui/icons-material";
 import {
   Autocomplete,
@@ -15,9 +15,12 @@ import {
 import styled from "@emotion/styled";
 import { Link } from "react-router-dom";
 import stringAvatar from "../utils/avatarString";
-import { useSnackbar } from "notistack";
+import { enqueueSnackbar, useSnackbar } from "notistack";
 
 import { skills } from "../utils/dummyData";
+import { UserContext } from "../components/userContextHook";
+import PropTypes from "prop-types";
+import axios from "axios";
 
 const ProfileBackgroundBox = styled(Box)({
   height: "100vh",
@@ -29,51 +32,33 @@ const ProfileBackgroundBox = styled(Box)({
   gap: "20px",
 });
 
-const UserContext = createContext();
-
-const useUser = () => useContext(UserContext);
-
 const Profile = () => {
   const { enqueueSnackbar } = useSnackbar();
 
-  const [user, setUser] = useState();
-  // const [userLoading, setUserLoading] = useState(false); May be used later depending on API
-
-  useEffect(() => {
-    // Likely, fetch user from local storage. If not that, get details through an API
-    setUser({
-      _id: "648fa12c9f1b2a001a5e6b36",
-      name: "Anita Sharma",
-      score: 92,
-      skills: ["HTML", "CSS", "JavaScript", "React", "MongoDB", "Express"],
-      connections: ["648fa12c9f1b2a001a5e6b37", "648fa12c9f1b2a001a5e6b38"],
-    });
-  }, []);
+  const { user, setUser } = useContext(UserContext);
 
   return (
-    <UserContext.Provider value={{ user, setUser, enqueueSnackbar }}>
-      <ProfileBackgroundBox>
-        <IconButton style={{ position: "absolute", top: "30px", left: "40px" }}>
-          <Link to={"/"} style={{ textDecoration: "none", color: "inherit" }}>
-            <KeyboardBackspace fontSize="large" />
-          </Link>
-        </IconButton>
-        {user ? (
-          <>
-            <NameSection />
-            <Divider />
-            <SkillsSection />
-          </>
-        ) : (
-          <CircularProgress />
-        )}
-      </ProfileBackgroundBox>
-    </UserContext.Provider>
+    <ProfileBackgroundBox>
+      <IconButton style={{ position: "absolute", top: "30px", left: "40px" }}>
+        <Link to={"/"} style={{ textDecoration: "none", color: "inherit" }}>
+          <KeyboardBackspace fontSize="large" />
+        </Link>
+      </IconButton>
+      {user.name ? (
+        <>
+          <NameSection enqueueSnackbar={enqueueSnackbar} />
+          <Divider />
+          <SkillsSection enqueueSnackbar={enqueueSnackbar} />
+        </>
+      ) : (
+        <CircularProgress />
+      )}
+    </ProfileBackgroundBox>
   );
 };
 
-const NameSection = () => {
-  const { user, setUser, enqueueSnackbar } = useUser();
+const NameSection = ({ enqueueSnackbar }) => {
+  const { user, setUser } = useContext(UserContext);
   const [editingName, setEditingName] = useState(false);
   const [nameLoading, setNameLoading] = useState(false);
   const [userName, setUserName] = useState(user.name);
@@ -81,29 +66,31 @@ const NameSection = () => {
   const handleNameChange = async (e) => {
     e.preventDefault();
     setNameLoading(true);
-    // Call API to edit user
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // Timeout to test loading screen
-    // Dummy data for testing
-    const statusArray = [200, 404, 500];
-    const status = statusArray[Math.floor(Math.random() * 3)];
-
-    // Notifying users about the result through a snackbar queue
-    switch (status) {
-      case 200:
-        enqueueSnackbar(`Successfully changed name.`, { variant: "success" });
-        setUser({ ...user, name: userName });
-        setEditingName(false);
-        break;
-      case 404:
-        enqueueSnackbar("User not found.", { variant: "error" });
-        break;
-      case 500:
-        enqueueSnackbar("Error changing name.", { variant: "error" });
-        break;
-      default:
-        break;
+    // Call API to edit user name
+    try {
+      const response = await axios.put("", {
+        userId: user._id,
+        changes: { name: userName },
+      });
+      enqueueSnackbar(`Successfully changed name.`, { variant: "success" });
+      setUser({ ...user, name: userName });
+    } catch (error) {
+      switch (error.status) {
+        case 404:
+          enqueueSnackbar("User not found.", { variant: "error" });
+          break;
+        case 500:
+          enqueueSnackbar("Error changing name.", { variant: "error" });
+          break;
+        default:
+          enqueueSnackbar("Unknown error. Please try again later.", {
+            variant: "error",
+          });
+          break;
+      }
+    } finally {
+      setNameLoading(false);
     }
-    setNameLoading(false);
   };
 
   return (
@@ -151,8 +138,12 @@ const NameSection = () => {
   );
 };
 
-const SkillsSection = () => {
-  const { user, setUser, enqueueSnackbar } = useUser();
+NameSection.propTypes = {
+  enqueueSnackbar: PropTypes.func,
+};
+
+const SkillsSection = ({ enqueueSnackbar }) => {
+  const { user, setUser } = useContext(UserContext);
 
   const [userSkills, setUserSkills] = useState(user.skills);
   const [editingSkills, setEditingSkills] = useState(false);
@@ -162,28 +153,33 @@ const SkillsSection = () => {
     e.preventDefault();
     setSkillsLoading(true);
     // Call API to edit user
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // Timeout to test loading screen
-    // Dummy data for testing
-    const statusArray = [200, 404, 500];
-    const status = statusArray[Math.floor(Math.random() * 3)];
-
-    // Notifying users about the result through a snackbar queue
-    switch (status) {
-      case 200:
-        enqueueSnackbar(`Successfully changed skills.`, { variant: "success" });
-        setUser({ ...user, skills: userSkills });
-        setEditingSkills(false);
-        break;
-      case 404:
-        enqueueSnackbar("User not found.", { variant: "error" });
-        break;
-      case 500:
-        enqueueSnackbar("Error changing skills.", { variant: "error" });
-        break;
-      default:
-        break;
+    e.preventDefault();
+    setSkillsLoading(true);
+    // Call API to edit user name
+    try {
+      const response = await axios.put("", {
+        userId: user._id,
+        changes: { skills: userSkills },
+      });
+      enqueueSnackbar(`Successfully changed skills.`, { variant: "success" });
+      setUser({ ...user, skills: userSkills });
+    } catch (error) {
+      switch (error.status) {
+        case 404:
+          enqueueSnackbar("User not found.", { variant: "error" });
+          break;
+        case 500:
+          enqueueSnackbar("Error changing sklls.", { variant: "error" });
+          break;
+        default:
+          enqueueSnackbar("Unknown error. Please try again later.", {
+            variant: "error",
+          });
+          break;
+      }
+    } finally {
+      setSkillsLoading(false);
     }
-    setSkillsLoading(false);
   };
 
   return (
@@ -246,6 +242,10 @@ const SkillsSection = () => {
       )}
     </form>
   );
+};
+
+SkillsSection.propTypes = {
+  enqueueSnackbar: PropTypes.func,
 };
 
 export default Profile;

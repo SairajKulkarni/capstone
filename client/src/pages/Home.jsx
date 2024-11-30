@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import PropTypes from "prop-types";
+import { UserContext } from "../components/userContextHook.js";
 import {
   AppBar,
   Autocomplete,
@@ -31,11 +32,12 @@ import {
 import styled from "@emotion/styled";
 // import MenuIcon from "@mui/icons-material/Menu";
 import { AccountCircle } from "@mui/icons-material";
-import { enqueueSnackbar, useSnackbar } from "notistack";
+import { useSnackbar } from "notistack";
 
-import { friends, skills, recommendations } from "../utils/dummyData.js";
+import { friends, skills } from "../utils/dummyData.js";
 import stringAvatar from "../utils/avatarString.js";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 const RecommendationsBox = styled(Box)({
   marginTop: "20px",
@@ -49,37 +51,45 @@ const RecommendationsBox = styled(Box)({
 
 const Home = () => {
   const { enqueueSnackbar } = useSnackbar();
-
   const [recommendationsLoading, setRecommendationsLoading] = useState(false);
   const [recommendedUsers, setRecommendedUsers] = useState([]);
 
-  const handleConnectClick = (id, name) => {
+  const { user, setUser } = useContext(UserContext);
+
+  const handleConnectClick = async (id, name) => {
     // Get response from API call
-
-    // Dummy data for testing
-    const statusArray = [200, 400, 404, 500];
-    const status = statusArray[Math.floor(Math.random() * 4)];
-
-    // Notifying users about the result through a snackbar queue
-    switch (status) {
-      case 200:
-        enqueueSnackbar(`Successfully connected with ${name}.`, {
-          variant: "success",
-        });
-        break;
-      case 404:
-        enqueueSnackbar("User not found.", { variant: "error" });
-        break;
-      case 400:
-        enqueueSnackbar(`You were already connected to ${name}`, {
-          variant: "info",
-        });
-        break;
-      case 500:
-        enqueueSnackbar("Error connecting users.", { variant: "error" });
-        break;
-      default:
-        break;
+    try {
+      const response = await axios.post("/api/connect", {
+        userId1: user._id,
+        userId2: id,
+      });
+      enqueueSnackbar(`Successfully connected with ${name}.`, {
+        variant: "success",
+      });
+      setUser((prev) => ({
+        ...prev,
+        score: response.data.userA.score,
+        connections: [...prev.connections, response.data.userB._id],
+      }));
+    } catch (error) {
+      switch (error.status) {
+        case 404:
+          enqueueSnackbar("User not found.", { variant: "error" });
+          break;
+        case 400:
+          enqueueSnackbar(`You were already connected to ${name}`, {
+            variant: "info",
+          });
+          break;
+        case 500:
+          enqueueSnackbar("Error connecting users.", { variant: "error" });
+          break;
+        default:
+          enqueueSnackbar("Unknown error. Please try again later.", {
+            variant: "error",
+          });
+          break;
+      }
     }
   };
 
@@ -105,6 +115,7 @@ const Home = () => {
           <RecommendationsForm
             setRecommendationsLoading={setRecommendationsLoading}
             setRecommendedUsers={setRecommendedUsers}
+            enqueueSnackbar={enqueueSnackbar}
           />
 
           {/* Area to show recommendations for the user */}
@@ -239,15 +250,27 @@ const NavBar = () => {
 
 const ConnectionsSection = () => {
   const [connections, setConnections] = useState([]);
-  const [connectionsLoading, setConnectionsLoading] = useState(false);
+  const [connectionsLoading, setConnectionsLoading] = useState(true);
+  const [connectionsError, setConnectionsError] = useState(false);
+
+  const { user } = useContext(UserContext);
 
   useEffect(() => {
     const getConnections = async () => {
       setConnectionsLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Get connections through an API
-      setConnections(friends);
-      setConnectionsLoading(false);
+      try {
+        const response = await axios.post("", {
+          userId: user._id,
+        });
+        setConnections(response.connections);
+      } catch (error) {
+        console.error(error);
+        setConnectionsError(true);
+      } finally {
+        setConnectionsLoading(false);
+      }
     };
 
     getConnections();
@@ -258,8 +281,16 @@ const ConnectionsSection = () => {
       <Typography variant="h6" align="center" padding={2}>
         Your Connections
       </Typography>
-      {connectionsLoading && (
+      {/* <Box
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          marginTop: "20px",
+        }}
+      > */}
+      {connectionsLoading ? (
         <Box
+          width="100%"
           style={{
             display: "flex",
             justifyContent: "center",
@@ -268,11 +299,32 @@ const ConnectionsSection = () => {
         >
           <CircularProgress />
         </Box>
-      )}
-      {!connectionsLoading && connections.length !== 0 && (
+      ) : connectionsError ? (
+        <Box
+          width="100%"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "20px",
+          }}
+        >
+          <Typography> An error occurred.</Typography>
+        </Box>
+      ) : connections.length === 0 ? (
+        <Box
+          width="100%"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "20px",
+          }}
+        >
+          <Typography>You have no connections yet.</Typography>
+        </Box>
+      ) : (
         <List style={{ height: "90%", overflowY: "auto" }}>
           {connections.map((conn) => (
-            <ListItem key={conn._id} style={{ display: "flex" }}>
+            <ListItem key={conn._id} style={{ display: "flex", width: "100%" }}>
               <Avatar {...stringAvatar(conn.name, { mr: 3 })} />
               <Typography sx={{ flexGrow: 1 }}>{conn.name}</Typography>
               <Typography>{conn.score}</Typography>
@@ -280,6 +332,7 @@ const ConnectionsSection = () => {
           ))}
         </List>
       )}
+      {/* </Box> */}
     </Paper>
   );
 };
@@ -287,37 +340,69 @@ const ConnectionsSection = () => {
 const RecommendationsForm = ({
   setRecommendationsLoading,
   setRecommendedUsers,
+  enqueueSnackbar,
 }) => {
-  const [searchType, setSearchType] = useState("1");
+  const [searchType, setSearchType] = useState(0);
   const [selectedSkills, setSelectedSkills] = useState([]);
 
+  const { user } = useContext(UserContext);
+  const userId = user._id;
+
   const handleRadioChange = (e) => {
-    setSearchType(e.target.value);
+    setSearchType(Number(e.target.value));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (searchType !== "2" && selectedSkills.length === 0) {
+    if (searchType !== 1 && selectedSkills.length === 0) {
       enqueueSnackbar("Select skills to recommend users with.", {
-        variant: "error",
+        variant: "warning",
       });
       return;
     }
     setRecommendationsLoading(true);
-    // Get recommendations through API
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // Timeout to test loading screen
-    setRecommendedUsers(recommendations);
-    setRecommendationsLoading(false);
+
+    // Get recommendations through an API
+    const endPoints = [
+      {
+        apiUrl: "interests",
+        apiBody: { userId: userId, interests: selectedSkills },
+      },
+      {
+        apiUrl: "level",
+        apiBody: { userId: userId },
+      },
+      {
+        apiUrl: "level-interest",
+        apiBody: { userId: userId, interests: selectedSkills },
+      },
+    ];
+    try {
+      const response = await axios.post(
+        `/api/users/recommend/${endPoints[searchType].apiUrl}`,
+        endPoints[searchType].apiBody
+      );
+      setRecommendedUsers(response.recommendedUsers);
+    } catch (error) {
+      enqueueSnackbar(
+        error.response.data?.message ||
+          "Some error occurred. Please try again later.",
+        { variant: "error" }
+      );
+    } finally {
+      setRecommendationsLoading(false);
+    }
   };
+
   return (
     <form autoComplete="off" onSubmit={handleSubmit}>
       <FormControl>
         <Box style={{ display: "flex", gap: "20px", alignItems: "center" }}>
           <Typography variant="h6">Recommend By</Typography>
           <RadioGroup row value={searchType} onChange={handleRadioChange}>
-            <FormControlLabel value="1" control={<Radio />} label="Interest" />
-            <FormControlLabel value="2" control={<Radio />} label="Level" />
-            <FormControlLabel value="3" control={<Radio />} label="Both" />
+            <FormControlLabel value={0} control={<Radio />} label="Interest" />
+            <FormControlLabel value={1} control={<Radio />} label="Level" />
+            <FormControlLabel value={2} control={<Radio />} label="Both" />
           </RadioGroup>
         </Box>
         <Box style={{ display: "flex", gap: "20px", alignItems: "center" }}>
@@ -326,7 +411,7 @@ const RecommendationsForm = ({
             freeSolo
             options={skills}
             value={selectedSkills}
-            disabled={searchType === "2"}
+            disabled={searchType === 1}
             onChange={(e, value) => setSelectedSkills(value)}
             sx={{ width: 300 }}
             renderInput={(params) => <TextField {...params} label="Skill" />}
@@ -344,8 +429,10 @@ const RecommendationsForm = ({
 };
 
 RecommendationsForm.propTypes = {
+  userId: PropTypes.string,
   setRecommendationsLoading: PropTypes.func,
   setRecommendedUsers: PropTypes.func,
+  enqueueSnackbar: PropTypes.func,
 };
 
 export default Home;

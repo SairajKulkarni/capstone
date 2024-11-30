@@ -7,6 +7,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import PageNotFound from "./pages/PageNotFound";
+import UserProvider from "./components/UserContext";
 import "./index.css";
 import Profile from "./pages/Profile";
 
@@ -33,7 +34,9 @@ const router = createBrowserRouter([
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <SnackbarProvider maxSnack={2}>
-      <RouterProvider router={router} />
+      <UserProvider>
+        <RouterProvider router={router} />
+      </UserProvider>
     </SnackbarProvider>
   </StrictMode>
 );
