@@ -9,7 +9,9 @@ import {
   Typography,
 } from "@mui/material";
 import styled from "@emotion/styled";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useSnackbar } from "notistack";
 
 import PasswordField from "../components/PasswordField";
 
@@ -43,10 +45,38 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
 
+  const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     // Logic to call login API
+    try {
+      const response = await axios.post("/api/auth/login", {
+        username: username,
+        password: password,
+      });
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      navigate("/");
+    } catch (error) {
+      switch (error.status) {
+        case 400:
+          enqueueSnackbar("All fields are required", { variant: "warning" });
+          break;
+        case 401:
+          enqueueSnackbar("Invalid username or password", { variant: "error" });
+          setError(true);
+          break;
+        default:
+          enqueueSnackbar("Error signing up. Please try again later", {
+            variant: "error",
+          });
+          break;
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

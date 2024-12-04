@@ -15,7 +15,7 @@ const recommendUsersByInterests = async (req, res) => {
       _id: { $ne: userId }, // Exclude current user
     });
 
-    return res.json(recommendedUsers);
+    return res.json({ recommendedUsers: recommendedUsers });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -37,7 +37,7 @@ const recommendUsersByLevel = async (req, res) => {
       _id: { $ne: userId }, // Exclude current user
     });
 
-    return res.json(recommendedUsers);
+    return res.json({ recommendedUsers: recommendedUsers });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -61,7 +61,7 @@ const recommendUsersByInterestsAndLevel = async (req, res) => {
       score: { $gte: currentUser.score - 10, $lte: currentUser.score + 10 }, // Match within score range
     });
 
-    res.status(200).json(recommendedUsers);
+    return res.json({ recommendedUsers: recommendedUsers });
   } catch (error) {
     res.status(500).json({ message: "Error recommending users", error });
   }

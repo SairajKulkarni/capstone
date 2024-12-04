@@ -31,7 +31,7 @@ router.post("/recommend/level-interest", recommendUsersByInterestsAndLevel);
 
 router.post("/bulk", createUsersBulk);
 
-router.get("/connections/:userId", getUserConnections);
+router.post("/connections", getUserConnections);
 
 router.post("/disconnect", disconnectUsers);
 

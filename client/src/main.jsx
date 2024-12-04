@@ -14,7 +14,11 @@ import Profile from "./pages/Profile";
 const router = createBrowserRouter([
   {
     path: "/*",
-    element: <Home />,
+    element: (
+      <UserProvider>
+        <Home />
+      </UserProvider>
+    ),
     errorElement: <PageNotFound />,
   },
   {
@@ -27,16 +31,18 @@ const router = createBrowserRouter([
   },
   {
     path: "/profile",
-    element: <Profile />,
+    element: (
+      <UserProvider>
+        <Profile />
+      </UserProvider>
+    ),
   },
 ]);
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <SnackbarProvider maxSnack={2}>
-      <UserProvider>
-        <RouterProvider router={router} />
-      </UserProvider>
+      <RouterProvider router={router} />
     </SnackbarProvider>
   </StrictMode>
 );

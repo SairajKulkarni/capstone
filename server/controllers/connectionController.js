@@ -62,8 +62,7 @@ const connectUsers = async (req, res) => {
 
 const getUserConnections = async (req, res) => {
   try {
-    const { userId } = req.params;
-
+    const { userId } = req.body;
     // Find the user by their ID
     const user = await User.findById(userId).populate(
       "connections",

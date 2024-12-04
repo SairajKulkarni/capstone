@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { Done, Edit, KeyboardBackspace } from "@mui/icons-material";
+import { Close, Done, Edit, KeyboardBackspace } from "@mui/icons-material";
 import {
   Autocomplete,
   Avatar,
@@ -13,9 +13,9 @@ import {
   Typography,
 } from "@mui/material";
 import styled from "@emotion/styled";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import stringAvatar from "../utils/avatarString";
-import { enqueueSnackbar, useSnackbar } from "notistack";
+import { useSnackbar } from "notistack";
 
 import { skills } from "../utils/dummyData";
 import { UserContext } from "../components/userContextHook";
@@ -35,14 +35,17 @@ const ProfileBackgroundBox = styled(Box)({
 const Profile = () => {
   const { enqueueSnackbar } = useSnackbar();
 
-  const { user, setUser } = useContext(UserContext);
+  const { user } = useContext(UserContext);
+
+  const navigate = useNavigate();
 
   return (
     <ProfileBackgroundBox>
-      <IconButton style={{ position: "absolute", top: "30px", left: "40px" }}>
-        <Link to={"/"} style={{ textDecoration: "none", color: "inherit" }}>
-          <KeyboardBackspace fontSize="large" />
-        </Link>
+      <IconButton
+        onClick={() => navigate("/")}
+        style={{ position: "absolute", top: "30px", left: "40px" }}
+      >
+        <KeyboardBackspace fontSize="large" />
       </IconButton>
       {user.name ? (
         <>
@@ -68,12 +71,13 @@ const NameSection = ({ enqueueSnackbar }) => {
     setNameLoading(true);
     // Call API to edit user name
     try {
-      const response = await axios.put("", {
+      const response = await axios.put("/api/users/edit", {
         userId: user._id,
-        changes: { name: userName },
+        change: { name: userName },
       });
       enqueueSnackbar(`Successfully changed name.`, { variant: "success" });
       setUser({ ...user, name: userName });
+      setEditingName(false);
     } catch (error) {
       switch (error.status) {
         case 404:
@@ -104,7 +108,12 @@ const NameSection = ({ enqueueSnackbar }) => {
       />
       {editingName ? (
         <form
-          style={{ display: "flex", alignItems: "center", gap: "10px" }}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "10px",
+          }}
           onSubmit={handleNameChange}
         >
           <TextField
@@ -117,13 +126,24 @@ const NameSection = ({ enqueueSnackbar }) => {
           {nameLoading ? (
             <CircularProgress />
           ) : (
-            <IconButton type="submit" style={{ height: "50px" }}>
-              <Done fontSize="large" />
-            </IconButton>
+            <Box>
+              <IconButton type="submit" style={{ height: "50px" }}>
+                <Done fontSize="large" />
+              </IconButton>
+              <IconButton
+                onClick={() => {
+                  setEditingName(false);
+                  setUserName(user.name);
+                }}
+                style={{ height: "50px" }}
+              >
+                <Close fontSize="large" />
+              </IconButton>
+            </Box>
           )}
         </form>
       ) : (
-        <Box style={{ display: "flex", alignItems: "center" }}>
+        <Box style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <Typography fontSize="50px">{user.name}</Typography>
           <IconButton
             style={{ height: "50px" }}
@@ -144,7 +164,6 @@ NameSection.propTypes = {
 
 const SkillsSection = ({ enqueueSnackbar }) => {
   const { user, setUser } = useContext(UserContext);
-
   const [userSkills, setUserSkills] = useState(user.skills);
   const [editingSkills, setEditingSkills] = useState(false);
   const [skillsLoading, setSkillsLoading] = useState(false);
@@ -152,17 +171,14 @@ const SkillsSection = ({ enqueueSnackbar }) => {
   const handleSkillsChange = async (e) => {
     e.preventDefault();
     setSkillsLoading(true);
-    // Call API to edit user
-    e.preventDefault();
-    setSkillsLoading(true);
-    // Call API to edit user name
     try {
-      const response = await axios.put("", {
+      const response = await axios.put("/api/users/edit", {
         userId: user._id,
-        changes: { skills: userSkills },
+        change: { skills: userSkills },
       });
       enqueueSnackbar(`Successfully changed skills.`, { variant: "success" });
       setUser({ ...user, skills: userSkills });
+      setEditingSkills(false);
     } catch (error) {
       switch (error.status) {
         case 404:
@@ -197,7 +213,7 @@ const SkillsSection = ({ enqueueSnackbar }) => {
         multiple
         freeSolo
         readOnly={!editingSkills}
-        disabled={skillsLoading}
+        disabled={skillsLoading || (!editingSkills && userSkills.length === 0)}
         fullWidth
         options={[...new Set([...userSkills, ...skills])]}
         value={userSkills}

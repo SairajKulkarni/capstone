@@ -31,12 +31,12 @@ import {
 } from "@mui/material";
 import styled from "@emotion/styled";
 // import MenuIcon from "@mui/icons-material/Menu";
-import { AccountCircle } from "@mui/icons-material";
+import { AccountCircle, Delete } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
 
-import { friends, skills } from "../utils/dummyData.js";
+import { skills } from "../utils/dummyData.js";
 import stringAvatar from "../utils/avatarString.js";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const RecommendationsBox = styled(Box)({
@@ -53,13 +53,14 @@ const Home = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [recommendationsLoading, setRecommendationsLoading] = useState(false);
   const [recommendedUsers, setRecommendedUsers] = useState([]);
+  const [noRecommendations, setNoRecommendations] = useState(false);
 
   const { user, setUser } = useContext(UserContext);
 
   const handleConnectClick = async (id, name) => {
     // Get response from API call
     try {
-      const response = await axios.post("/api/connect", {
+      const response = await axios.post("/api/users/connect", {
         userId1: user._id,
         userId2: id,
       });
@@ -71,6 +72,9 @@ const Home = () => {
         score: response.data.userA.score,
         connections: [...prev.connections, response.data.userB._id],
       }));
+      setRecommendedUsers((prev) =>
+        prev.filter((recUser) => recUser._id !== response.data.userB._id)
+      );
     } catch (error) {
       switch (error.status) {
         case 404:
@@ -115,6 +119,7 @@ const Home = () => {
           <RecommendationsForm
             setRecommendationsLoading={setRecommendationsLoading}
             setRecommendedUsers={setRecommendedUsers}
+            setNoRecommendations={setNoRecommendations}
             enqueueSnackbar={enqueueSnackbar}
           />
 
@@ -149,7 +154,7 @@ const Home = () => {
               {!recommendationsLoading &&
                 recommendedUsers.length !== 0 &&
                 recommendedUsers.map((user) => (
-                  <Grid2 key={user._id} size={3.5}>
+                  <Grid2 key={user._id}>
                     <Card>
                       <CardHeader
                         avatar={<Avatar {...stringAvatar(user.name)} />}
@@ -183,6 +188,9 @@ const Home = () => {
                     </Card>
                   </Grid2>
                 ))}
+              {!recommendationsLoading && noRecommendations && (
+                <Typography>No recommendations found.</Typography>
+              )}
             </Grid2>
           </RecommendationsBox>
         </Box>
@@ -194,6 +202,9 @@ const Home = () => {
 const NavBar = () => {
   const [accountAnchorEl, setAccountAnchorEl] = useState(null);
   const open = Boolean(accountAnchorEl);
+
+  const navigate = useNavigate();
+
   const handleOpen = (e) => {
     setAccountAnchorEl(e.currentTarget);
   };
@@ -226,21 +237,14 @@ const NavBar = () => {
           </IconButton>
         </Box>
         <Menu anchorEl={accountAnchorEl} open={open} onClose={handleClose}>
-          <MenuItem>
-            <Link
-              to={"/profile"}
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
-              Profile
-            </Link>
-          </MenuItem>
-          <MenuItem>
-            <Link
-              to={"/login"}
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
-              Logout
-            </Link>
+          <MenuItem onClick={() => navigate("/profile")}>Profile</MenuItem>
+          <MenuItem
+            onClick={() => {
+              localStorage.removeItem("user");
+              navigate("/login");
+            }}
+          >
+            Logout
           </MenuItem>
         </Menu>
       </Toolbar>
@@ -253,18 +257,50 @@ const ConnectionsSection = () => {
   const [connectionsLoading, setConnectionsLoading] = useState(true);
   const [connectionsError, setConnectionsError] = useState(false);
 
-  const { user } = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  const handleDisconnect = async (id, name) => {
+    try {
+      const response = await axios.post("/api/users/disconnect", {
+        userId1: user._id,
+        userId2: id,
+      });
+      enqueueSnackbar(`Successfully disconnected with ${name}.`, {
+        variant: "success",
+      });
+      setUser((prev) => ({
+        ...prev,
+        connections: response.data.user1Connections,
+      }));
+    } catch (error) {
+      switch (error.status) {
+        case 404:
+          enqueueSnackbar("User not found.", { variant: "error" });
+          break;
+        case 500:
+          enqueueSnackbar("Error disconnecting users.", { variant: "error" });
+          break;
+        default:
+          enqueueSnackbar("Unknown error. Please try again later.", {
+            variant: "error",
+          });
+          break;
+      }
+    }
+  };
 
   useEffect(() => {
     const getConnections = async () => {
       setConnectionsLoading(true);
-
       // Get connections through an API
+      if (user._id === "") return;
       try {
-        const response = await axios.post("", {
+        const response = await axios.post("/api/users/connections", {
           userId: user._id,
         });
-        setConnections(response.connections);
+        setConnections(response.data.connections);
       } catch (error) {
         console.error(error);
         setConnectionsError(true);
@@ -272,22 +308,14 @@ const ConnectionsSection = () => {
         setConnectionsLoading(false);
       }
     };
-
     getConnections();
-  }, []);
+  }, [user]);
 
   return (
     <Paper elevation={3} style={{ height: "100%", width: "25%" }}>
       <Typography variant="h6" align="center" padding={2}>
         Your Connections
       </Typography>
-      {/* <Box
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          marginTop: "20px",
-        }}
-      > */}
       {connectionsLoading ? (
         <Box
           width="100%"
@@ -327,7 +355,10 @@ const ConnectionsSection = () => {
             <ListItem key={conn._id} style={{ display: "flex", width: "100%" }}>
               <Avatar {...stringAvatar(conn.name, { mr: 3 })} />
               <Typography sx={{ flexGrow: 1 }}>{conn.name}</Typography>
-              <Typography>{conn.score}</Typography>
+              <Typography mr={2}>{conn.score}</Typography>
+              <IconButton onClick={() => handleDisconnect(conn._id, conn.name)}>
+                <Delete />
+              </IconButton>
             </ListItem>
           ))}
         </List>
@@ -340,6 +371,7 @@ const ConnectionsSection = () => {
 const RecommendationsForm = ({
   setRecommendationsLoading,
   setRecommendedUsers,
+  setNoRecommendations,
   enqueueSnackbar,
 }) => {
   const [searchType, setSearchType] = useState(0);
@@ -350,6 +382,8 @@ const RecommendationsForm = ({
 
   const handleRadioChange = (e) => {
     setSearchType(Number(e.target.value));
+    setRecommendedUsers([]);
+    setNoRecommendations(false);
   };
 
   const handleSubmit = async (e) => {
@@ -361,6 +395,8 @@ const RecommendationsForm = ({
       return;
     }
     setRecommendationsLoading(true);
+    setNoRecommendations(false);
+    setRecommendedUsers([]);
 
     // Get recommendations through an API
     const endPoints = [
@@ -382,7 +418,15 @@ const RecommendationsForm = ({
         `/api/users/recommend/${endPoints[searchType].apiUrl}`,
         endPoints[searchType].apiBody
       );
-      setRecommendedUsers(response.recommendedUsers);
+      const unconnectedUsers = response.data.recommendedUsers.filter(
+        (recUser) => !user.connections.includes(recUser._id)
+      );
+      if (unconnectedUsers.length === 0) {
+        setNoRecommendations(true);
+        return;
+      } else {
+        setRecommendedUsers(unconnectedUsers);
+      }
     } catch (error) {
       enqueueSnackbar(
         error.response.data?.message ||
@@ -432,6 +476,7 @@ RecommendationsForm.propTypes = {
   userId: PropTypes.string,
   setRecommendationsLoading: PropTypes.func,
   setRecommendedUsers: PropTypes.func,
+  setNoRecommendations: PropTypes.func,
   enqueueSnackbar: PropTypes.func,
 };
 

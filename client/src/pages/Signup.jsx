@@ -9,12 +9,14 @@ import {
   Typography,
 } from "@mui/material";
 import styled from "@emotion/styled";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import PasswordField from "../components/PasswordField";
 
 import validatePassword from "../utils/validatePassword.js";
 import Logo from "../assets/network-icon-1897-Windows.ico";
+import axios from "axios";
+import { useSnackbar } from "notistack";
 
 const BackgroundBox = styled(Box)({
   width: "100vw",
@@ -35,7 +37,7 @@ const SignupForm = styled("form")({
   flexDirection: "column",
   justifyContent: "center",
   alignItems: "center",
-  gap: "4vh",
+  gap: "10px",
 });
 
 const Signup = () => {
@@ -44,10 +46,14 @@ const Signup = () => {
   const [passwordError, setPasswordError] = useState(false);
   const [confirmPasswordError, setConfirmPasswordError] = useState(false);
   const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validatePassword(password)) {
       setPasswordError(true);
@@ -59,6 +65,32 @@ const Signup = () => {
     }
     setLoading(true);
     // Logic to call signup API
+    try {
+      const response = await axios.post("/api/auth/signup", {
+        username: username,
+        name: name,
+        password: password,
+      });
+      enqueueSnackbar("Sign up successful. You can login now", { variant: "success" });
+      navigate("/login");
+    } catch (error) {
+      switch (error.status) {
+        case 400:
+          enqueueSnackbar("All fields are required", { variant: "warning" });
+          break;
+        case 409:
+          enqueueSnackbar("Username already exists", { variant: "error" });
+          setUsernameError(true);
+          break;
+        default:
+          enqueueSnackbar("Error signing up. Please try again later", {
+            variant: "error",
+          });
+          break;
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -78,6 +110,14 @@ const Signup = () => {
           {usernameError && (
             <FormHelperText>Username already exists.</FormHelperText>
           )}
+        </FormControl>
+        <FormControl sx={{ width: "60%" }}>
+          <TextField
+            required
+            label={"Enter Name"}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
         </FormControl>
         <FormControl
           error={passwordError || confirmPasswordError}
@@ -100,7 +140,7 @@ const Signup = () => {
           )}
           {passwordError && (
             <FormHelperText>
-              Please make sure to make your password
+              Please make sure your password
               <ul>
                 <li>Is at least eight characters long</li>
                 <li>Has at least one small letter</li>
