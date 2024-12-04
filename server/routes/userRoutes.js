@@ -4,12 +4,17 @@ const {
   getUserConnections,
   disconnectUsers,
 } = require("../controllers/connectionController");
-const { createUsersBulk } = require("../controllers/userController");
+const {
+  createUsersBulk,
+  editUser,
+  getUserProfile,
+} = require("../controllers/userController");
 const {
   recommendUsersByInterests,
   recommendUsersByLevel,
   recommendUsersByInterestsAndLevel,
 } = require("../controllers/recommendationController");
+const { authenticate } = require("../middlewares/authenticate");
 
 const router = express.Router();
 
@@ -29,5 +34,9 @@ router.post("/bulk", createUsersBulk);
 router.get("/connections/:userId", getUserConnections);
 
 router.post("/disconnect", disconnectUsers);
+
+router.put("/edit", editUser);
+
+router.get("/profile", authenticate, getUserProfile);
 
 module.exports = router;

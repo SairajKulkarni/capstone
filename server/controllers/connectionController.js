@@ -74,9 +74,16 @@ const getUserConnections = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Return the connections with basic details
+    // Map connections to include only _id, name, and score
+    const connections = user.connections.map((connection) => ({
+      _id: connection._id,
+      name: connection.name,
+      score: connection.score,
+    }));
+
+    // Return the filtered connections
     res.status(200).json({
-      connections: user.connections,
+      connections,
     });
   } catch (error) {
     res

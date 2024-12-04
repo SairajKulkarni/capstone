@@ -2,6 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const userRoutes = require("./routes/userRoutes");
+const authRoutes = require("./routes/authenticationRoutes");
 
 // Load env variables
 dotenv.config();
@@ -22,5 +23,6 @@ mongoose
 
 // Routes
 app.use("/api/users", userRoutes);
+app.use("/api/auth", authRoutes);
 
 module.exports = app;
