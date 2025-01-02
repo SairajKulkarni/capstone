@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
 import { UserContext } from "./userContextHook";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const UserProvider = ({ children }) => {
   const navigate = useNavigate();

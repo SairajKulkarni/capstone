@@ -69,7 +69,7 @@ const Login = () => {
           setError(true);
           break;
         default:
-          enqueueSnackbar("Error signing up. Please try again later", {
+          enqueueSnackbar("Error signing in. Please try again later", {
             variant: "error",
           });
           break;

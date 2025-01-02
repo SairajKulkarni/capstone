@@ -13,7 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import styled from "@emotion/styled";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import stringAvatar from "../utils/avatarString";
 import { useSnackbar } from "notistack";
 

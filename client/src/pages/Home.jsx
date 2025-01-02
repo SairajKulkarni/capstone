@@ -36,7 +36,7 @@ import { useSnackbar } from "notistack";
 
 import { skills } from "../utils/dummyData.js";
 import stringAvatar from "../utils/avatarString.js";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const RecommendationsBox = styled(Box)({
@@ -295,7 +295,10 @@ const ConnectionsSection = () => {
     const getConnections = async () => {
       setConnectionsLoading(true);
       // Get connections through an API
-      if (user._id === "") return;
+      if (user._id === "") {
+        setConnectionsLoading(false);
+        return;
+      }
       try {
         const response = await axios.post("/api/users/connections", {
           userId: user._id,
@@ -309,7 +312,7 @@ const ConnectionsSection = () => {
       }
     };
     getConnections();
-  }, [user]);
+  }, [user.connections]);
 
   return (
     <Paper elevation={3} style={{ height: "100%", width: "25%" }}>
