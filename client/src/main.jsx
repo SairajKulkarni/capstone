@@ -9,6 +9,7 @@ import Signup from "./pages/Signup";
 import PageNotFound from "./pages/PageNotFound";
 import UserProvider from "./components/UserContext";
 import "./index.css";
+import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
 
 const router = createBrowserRouter([
@@ -34,6 +35,14 @@ const router = createBrowserRouter([
     element: (
       <UserProvider>
         <Profile />
+      </UserProvider>
+    ),
+  },
+  {
+    path: "/messages", // Add the route for messages
+    element: (
+      <UserProvider>
+        <Messages />
       </UserProvider>
     ),
   },

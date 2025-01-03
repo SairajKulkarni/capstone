@@ -31,7 +31,7 @@ import {
 } from "@mui/material";
 import styled from "@emotion/styled";
 // import MenuIcon from "@mui/icons-material/Menu";
-import { AccountCircle, Delete } from "@mui/icons-material";
+import { AccountCircle, Delete, Chat } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
 
 import { skills } from "../utils/dummyData.js";
@@ -215,18 +215,19 @@ const NavBar = () => {
   return (
     <AppBar position="static">
       <Toolbar>
-        {/* May be useful later */}
-        {/* <IconButton
-          size="large"
-          edge="start"
-          sx={{ color: "white", mr: "20px" }}
-        >
-          <MenuIcon />
-        </IconButton> */}
         <Typography variant="h6" sx={{ flexGrow: 1 }}>
           Skill Connect
         </Typography>
+        
         <Box>
+        <IconButton
+          size="large"
+          edge="end"
+          sx={{ color: "white", mr: "2" }}
+          onClick={() => navigate("/messages")}
+        >
+          <Chat fontSize="large" />
+        </IconButton>
           <IconButton
             size="large"
             edge="end"
