@@ -1,10 +1,7 @@
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
-const JWT_SECRET = "your_jwt_secret"; // Use a secure secret in production
-
-// Login API
-const login = async (req, res) => {
+export const login = async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
     return res
@@ -17,12 +14,18 @@ const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid username or password." });
     }
 
-    const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
-      expiresIn: "1h",
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7h",
+    });
+
+    res.cookie("jwt", token, {
+      maxAge: 7 * 60 * 60 * 1000,
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV !== "development",
     });
 
     res.status(200).json({
-      token,
       user: {
         _id: user._id,
         name: user.name,
@@ -36,8 +39,7 @@ const login = async (req, res) => {
   }
 };
 
-// Sign Up API
-const signup = async (req, res) => {
+export const signup = async (req, res) => {
   const { username, name, password } = req.body;
   if (!username || !name || !password) {
     return res.status(400).json({ message: "All fields are required." });
@@ -51,18 +53,26 @@ const signup = async (req, res) => {
     const newUser = await User.create({ username, name, password });
 
     res.status(201).json({
-      _id: newUser._id,
-      name: newUser.name,
-      score: newUser.score,
+      message: "User created",
     });
   } catch (error) {
     res.status(500).json({ message: "Sign-up failed.", error });
   }
 };
 
-// Logout API
-const logout = (req, res) => {
-  res.status(200).json({ message: "Logged out successfully." });
+export const logout = (req, res) => {
+  try {
+    res.cookie("jwt", "", { maxAge: 0 });
+    res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error", error });
+  }
 };
 
-module.exports = { login, signup, logout };
+export const checkAuth = (req, res) => {
+  try {
+    res.status(200).json(req.user);
+  } catch (error) {
+    res.status(400).json({ message: "Error in authorisation", error });
+  }
+};

@@ -1,6 +1,6 @@
-const User = require("../models/User");
+import User from "../models/User.js";
 
-const recommendUsersByInterests = async (req, res) => {
+export const recommendUsersByInterests = async (req, res) => {
   const { userId, interests } = req.body;
 
   try {
@@ -22,7 +22,7 @@ const recommendUsersByInterests = async (req, res) => {
   }
 };
 
-const recommendUsersByLevel = async (req, res) => {
+export const recommendUsersByLevel = async (req, res) => {
   const { userId } = req.body;
 
   try {
@@ -44,7 +44,7 @@ const recommendUsersByLevel = async (req, res) => {
   }
 };
 
-const recommendUsersByInterestsAndLevel = async (req, res) => {
+export const recommendUsersByInterestsAndLevel = async (req, res) => {
   try {
     const { userId, interests } = req.body;
 
@@ -65,10 +65,4 @@ const recommendUsersByInterestsAndLevel = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Error recommending users", error });
   }
-};
-
-module.exports = {
-  recommendUsersByInterests,
-  recommendUsersByLevel,
-  recommendUsersByInterestsAndLevel,
 };

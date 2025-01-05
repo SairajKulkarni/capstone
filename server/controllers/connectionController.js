@@ -1,6 +1,6 @@
-const User = require("../models/User");
+import User from "../models/User.js";
 
-const connectUsers = async (req, res) => {
+export const connectUsers = async (req, res) => {
   try {
     const { userId1, userId2 } = req.body;
 
@@ -60,9 +60,9 @@ const connectUsers = async (req, res) => {
   }
 };
 
-const getUserConnections = async (req, res) => {
+export const getUserConnections = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { _id:userId } = req.user;
     // Find the user by their ID
     const user = await User.findById(userId).populate(
       "connections",
@@ -92,7 +92,7 @@ const getUserConnections = async (req, res) => {
 };
 
 // Disconnect two users
-const disconnectUsers = async (req, res) => {
+export const disconnectUsers = async (req, res) => {
   try {
     const { userId1, userId2 } = req.body;
 
@@ -127,5 +127,3 @@ const disconnectUsers = async (req, res) => {
     res.status(500).json({ message: "Error disconnecting users", error });
   }
 };
-
-module.exports = { connectUsers, getUserConnections, disconnectUsers };

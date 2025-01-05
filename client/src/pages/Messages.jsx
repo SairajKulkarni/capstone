@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import {
   Box,
@@ -24,8 +24,8 @@ const Messages = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("/api/users"); // Replace with your backend endpoint
-        setUsers(response.data);
+        const response = await axios.get("/api/users/connections", {withCredentials: true}); // Replace with your backend endpoint
+        setUsers(response.data.connections);
       } catch (error) {
         console.error("Error fetching users:", error);
       }
@@ -37,7 +37,7 @@ const Messages = () => {
   // Fetch chats for the selected user
   const fetchChats = async (userId) => {
     try {
-      const response = await axios.get(`/api/chats/${userId}`); // Replace with your backend endpoint
+      const response = await axios.get(`/api/chat/${userId}`); // Replace with your backend endpoint
       setChats(response.data);
     } catch (error) {
       console.error("Error fetching chats:", error);
@@ -46,7 +46,7 @@ const Messages = () => {
 
   const handleUserClick = (user) => {
     setSelectedUser(user);
-    fetchChats(user.id); // Replace `id` with your user identifier key
+    fetchChats(user._id); // Replace `id` with your user identifier key
   };
 
   return (
@@ -75,8 +75,8 @@ const Messages = () => {
         <List>
           {users.map((user) => (
             <ListItem
-              key={user.id} // Replace `id` with your user identifier key
-              button
+              key={user._id} // Replace `id` with your user identifier key
+              // button
               onClick={() => handleUserClick(user)}
               sx={{
                 borderRadius: "5px",

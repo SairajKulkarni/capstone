@@ -1,7 +1,7 @@
-const User = require("../models/User");
+import User from "../models/User.js";
 
 // Bulk create users
-const createUsersBulk = async (req, res) => {
+export const createUsersBulk = async (req, res) => {
   const { users } = req.body; // Expect an array of user objects
 
   try {
@@ -15,7 +15,7 @@ const createUsersBulk = async (req, res) => {
   }
 };
 
-const editUser = async (req, res) => {
+export const editUser = async (req, res) => {
   try {
     const { userId, change } = req.body; // Extract userId and changes from the request body
 
@@ -43,7 +43,7 @@ const editUser = async (req, res) => {
   }
 };
 
-const getUserProfile = async (req, res) => {
+export const getUserProfile = async (req, res) => {
   try {
     const userId = req.userId; // Extracted from authenticate middleware
 
@@ -71,5 +71,3 @@ const getUserProfile = async (req, res) => {
     res.status(500).json({ message: "Error fetching user profile.", error });
   }
 };
-
-module.exports = { createUsersBulk, editUser, getUserProfile };

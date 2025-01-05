@@ -42,13 +42,15 @@ const SignupForm = styled("form")({
 
 const Signup = () => {
   const [loading, setLoading] = useState(false);
-  const [usernameError, setUsernameError] = useState(false);
-  const [passwordError, setPasswordError] = useState(false);
-  const [confirmPasswordError, setConfirmPasswordError] = useState(false);
+
   const [username, setUsername] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [usernameError, setUsernameError] = useState(false);
+  const [passwordError, setPasswordError] = useState(false);
+  const [confirmPasswordError, setConfirmPasswordError] = useState(false);
 
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -66,12 +68,18 @@ const Signup = () => {
     setLoading(true);
     // Logic to call signup API
     try {
-      const response = await axios.post("/api/auth/signup", {
-        username: username,
-        name: name,
-        password: password,
+      const response = await axios.post(
+        "/api/auth/signup",
+        {
+          username: username,
+          name: name,
+          password: password,
+        },
+        { withCredentials: true }
+      );
+      enqueueSnackbar("Sign up successful. You can login now", {
+        variant: "success",
       });
-      enqueueSnackbar("Sign up successful. You can login now", { variant: "success" });
       navigate("/login");
     } catch (error) {
       switch (error.status) {

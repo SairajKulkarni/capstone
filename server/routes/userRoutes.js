@@ -1,42 +1,46 @@
-const express = require("express");
-const {
+import express from "express";
+import {
   connectUsers,
   getUserConnections,
   disconnectUsers,
-} = require("../controllers/connectionController");
-const {
+} from "../controllers/connectionController.js";
+import {
   createUsersBulk,
   editUser,
   getUserProfile,
-} = require("../controllers/userController");
-const {
+} from "../controllers/userController.js";
+import {
   recommendUsersByInterests,
   recommendUsersByLevel,
   recommendUsersByInterestsAndLevel,
-} = require("../controllers/recommendationController");
-const { authenticate } = require("../middlewares/authenticate");
+} from "../controllers/recommendationController.js";
+import { authenticate } from "../middlewares/authenticate.js";
 
 const router = express.Router();
 
 // POST /api/users/connect - Connect two users
-router.post("/connect", connectUsers);
+router.post("/connect", authenticate, connectUsers);
 
 // POST /api/users/recommend/interests - Recommend users by interests
-router.post("/recommend/interests", recommendUsersByInterests);
+router.post("/recommend/interests", authenticate, recommendUsersByInterests);
 
 // POST /api/users/recommend/level - Recommend users by skill level
-router.post("/recommend/level", recommendUsersByLevel);
+router.post("/recommend/level", authenticate, recommendUsersByLevel);
 
-router.post("/recommend/level-interest", recommendUsersByInterestsAndLevel);
+router.post(
+  "/recommend/level-interest",
+  authenticate,
+  recommendUsersByInterestsAndLevel
+);
 
 router.post("/bulk", createUsersBulk);
 
-router.post("/connections", getUserConnections);
+router.get("/connections", authenticate, getUserConnections);
 
-router.post("/disconnect", disconnectUsers);
+router.post("/disconnect", authenticate, disconnectUsers);
 
-router.put("/edit", editUser);
+router.put("/edit", authenticate, editUser);
 
 router.get("/profile", authenticate, getUserProfile);
 
-module.exports = router;
+export default router;

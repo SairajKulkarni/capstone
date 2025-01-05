@@ -16,6 +16,7 @@ import { useSnackbar } from "notistack";
 import PasswordField from "../components/PasswordField";
 
 import Logo from "../assets/network-icon-1897-Windows.ico";
+import { useAuthStore } from "../store/useAuthStore";
 
 const BackgroundBox = styled(Box)({
   width: "100vw",
@@ -40,6 +41,8 @@ const LoginForm = styled("form")({
 });
 
 const Login = () => {
+  const { login } = useAuthStore();
+
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -50,17 +53,12 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    // Logic to call login API
-    try {
-      const response = await axios.post("/api/auth/login", {
-        username: username,
-        password: password,
-      });
-      localStorage.setItem("user", JSON.stringify(response.data.user));
-      navigate("/");
-    } catch (error) {
-      switch (error.status) {
+
+    const result = await login(username, password, setLoading);
+
+    if (result.success) navigate("/");
+    else {
+      switch (result.error.status) {
         case 400:
           enqueueSnackbar("All fields are required", { variant: "warning" });
           break;
@@ -74,8 +72,6 @@ const Login = () => {
           });
           break;
       }
-    } finally {
-      setLoading(false);
     }
   };
 

@@ -1,8 +1,6 @@
-const mongoose = require("mongoose");
-const dotenv = require("dotenv");
-const User = require("./models/User");
-
-dotenv.config();
+import mongoose from "mongoose";
+import "dotenv/config"
+import User from "./models/User.js";
 
 // Connect to MongoDB
 mongoose

@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState} from "react";
 import { Close, Done, Edit, KeyboardBackspace } from "@mui/icons-material";
 import {
   Autocomplete,
@@ -18,9 +18,9 @@ import stringAvatar from "../utils/avatarString";
 import { useSnackbar } from "notistack";
 
 import { skills } from "../utils/dummyData";
-import { UserContext } from "../components/userContextHook";
 import PropTypes from "prop-types";
 import axios from "axios";
+import { useAuthStore } from "../store/useAuthStore";
 
 const ProfileBackgroundBox = styled(Box)({
   height: "100vh",
@@ -35,7 +35,7 @@ const ProfileBackgroundBox = styled(Box)({
 const Profile = () => {
   const { enqueueSnackbar } = useSnackbar();
 
-  const { user } = useContext(UserContext);
+  const { user } = useAuthStore();
 
   const navigate = useNavigate();
 
@@ -61,7 +61,7 @@ const Profile = () => {
 };
 
 const NameSection = ({ enqueueSnackbar }) => {
-  const { user, setUser } = useContext(UserContext);
+  const { user, setUser } = useAuthStore();
   const [editingName, setEditingName] = useState(false);
   const [nameLoading, setNameLoading] = useState(false);
   const [userName, setUserName] = useState(user.name);
@@ -71,12 +71,21 @@ const NameSection = ({ enqueueSnackbar }) => {
     setNameLoading(true);
     // Call API to edit user name
     try {
-      const response = await axios.put("/api/users/edit", {
-        userId: user._id,
-        change: { name: userName },
-      });
+      const response = await axios.put(
+        "/api/users/edit",
+        {
+          userId: user._id,
+          change: { name: userName },
+        },
+        { withCredentials: true }
+      );
       enqueueSnackbar(`Successfully changed name.`, { variant: "success" });
-      setUser({ ...user, name: userName });
+      setUser((prev) => {
+        return {
+          ...prev,
+          name: userName,
+        };
+      });
       setEditingName(false);
     } catch (error) {
       switch (error.status) {
@@ -163,7 +172,7 @@ NameSection.propTypes = {
 };
 
 const SkillsSection = ({ enqueueSnackbar }) => {
-  const { user, setUser } = useContext(UserContext);
+  const { user, setUser } = useAuthStore();
   const [userSkills, setUserSkills] = useState(user.skills);
   const [editingSkills, setEditingSkills] = useState(false);
   const [skillsLoading, setSkillsLoading] = useState(false);
@@ -172,12 +181,16 @@ const SkillsSection = ({ enqueueSnackbar }) => {
     e.preventDefault();
     setSkillsLoading(true);
     try {
-      const response = await axios.put("/api/users/edit", {
-        userId: user._id,
-        change: { skills: userSkills },
-      });
+      const response = await axios.put(
+        "/api/users/edit",
+        {
+          userId: user._id,
+          change: { skills: userSkills },
+        },
+        { withCredentials: true }
+      );
       enqueueSnackbar(`Successfully changed skills.`, { variant: "success" });
-      setUser({ ...user, skills: userSkills });
+      setUser((prev) => { return { ...prev, skills: userSkills }});
       setEditingSkills(false);
     } catch (error) {
       switch (error.status) {

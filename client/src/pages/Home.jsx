@@ -1,8 +1,6 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { UserContext } from "../components/userContextHook.js";
 import {
-  AppBar,
   Autocomplete,
   Avatar,
   Box,
@@ -19,25 +17,23 @@ import {
   IconButton,
   List,
   ListItem,
-  Menu,
-  MenuItem,
   Paper,
   Radio,
   RadioGroup,
   Skeleton,
   TextField,
-  Toolbar,
   Typography,
 } from "@mui/material";
 import styled from "@emotion/styled";
 // import MenuIcon from "@mui/icons-material/Menu";
-import { AccountCircle, Delete, Chat } from "@mui/icons-material";
+import { Delete } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
 
 import { skills } from "../utils/dummyData.js";
 import stringAvatar from "../utils/avatarString.js";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useAuthStore } from "../store/useAuthStore.js";
+import Navbar from "../components/Navbar.jsx";
 
 const RecommendationsBox = styled(Box)({
   marginTop: "20px",
@@ -55,23 +51,29 @@ const Home = () => {
   const [recommendedUsers, setRecommendedUsers] = useState([]);
   const [noRecommendations, setNoRecommendations] = useState(false);
 
-  const { user, setUser } = useContext(UserContext);
+  const { user, setUser } = useAuthStore();
 
   const handleConnectClick = async (id, name) => {
     // Get response from API call
     try {
-      const response = await axios.post("/api/users/connect", {
-        userId1: user._id,
-        userId2: id,
-      });
+      const response = await axios.post(
+        "/api/users/connect",
+        {
+          userId1: user._id,
+          userId2: id,
+        },
+        { withCredentials: true }
+      );
       enqueueSnackbar(`Successfully connected with ${name}.`, {
         variant: "success",
       });
-      setUser((prev) => ({
-        ...prev,
-        score: response.data.userA.score,
-        connections: [...prev.connections, response.data.userB._id],
-      }));
+      setUser((prev) => {
+        return {
+          ...prev,
+          score: response.data.userA.score,
+          connections: [...prev.connections, response.data.userB._id],
+        };
+      });
       setRecommendedUsers((prev) =>
         prev.filter((recUser) => recUser._id !== response.data.userB._id)
       );
@@ -100,7 +102,7 @@ const Home = () => {
   return (
     <Box height="100vh" width="100vw">
       {/* Navigation bar */}
-      <NavBar />
+      <Navbar />
 
       {/* Main body */}
       <Box
@@ -199,82 +201,34 @@ const Home = () => {
   );
 };
 
-const NavBar = () => {
-  const [accountAnchorEl, setAccountAnchorEl] = useState(null);
-  const open = Boolean(accountAnchorEl);
-
-  const navigate = useNavigate();
-
-  const handleOpen = (e) => {
-    setAccountAnchorEl(e.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAccountAnchorEl(null);
-  };
-  return (
-    <AppBar position="static">
-      <Toolbar>
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
-          Skill Connect
-        </Typography>
-        
-        <Box>
-        <IconButton
-          size="large"
-          edge="end"
-          sx={{ color: "white", mr: "2" }}
-          onClick={() => navigate("/messages")}
-        >
-          <Chat fontSize="large" />
-        </IconButton>
-          <IconButton
-            size="large"
-            edge="end"
-            sx={{ color: "white" }}
-            onClick={handleOpen}
-          >
-            <AccountCircle fontSize="large" />
-          </IconButton>
-        </Box>
-        <Menu anchorEl={accountAnchorEl} open={open} onClose={handleClose}>
-          <MenuItem onClick={() => navigate("/profile")}>Profile</MenuItem>
-          <MenuItem
-            onClick={() => {
-              localStorage.removeItem("user");
-              navigate("/login");
-            }}
-          >
-            Logout
-          </MenuItem>
-        </Menu>
-      </Toolbar>
-    </AppBar>
-  );
-};
-
 const ConnectionsSection = () => {
   const [connections, setConnections] = useState([]);
   const [connectionsLoading, setConnectionsLoading] = useState(true);
   const [connectionsError, setConnectionsError] = useState(false);
 
-  const { user, setUser } = useContext(UserContext);
+  const { user, setUser } = useAuthStore();
 
   const { enqueueSnackbar } = useSnackbar();
 
   const handleDisconnect = async (id, name) => {
     try {
-      const response = await axios.post("/api/users/disconnect", {
-        userId1: user._id,
-        userId2: id,
-      });
+      const response = await axios.post(
+        "/api/users/disconnect",
+        {
+          userId1: user._id,
+          userId2: id,
+        },
+        { withCredentials: true }
+      );
       enqueueSnackbar(`Successfully disconnected with ${name}.`, {
         variant: "success",
       });
-      setUser((prev) => ({
-        ...prev,
-        connections: response.data.user1Connections,
-      }));
+      setUser((prev) => {
+        return {
+          ...prev,
+          connections: response.data.user1Connections,
+        };
+      });
     } catch (error) {
       switch (error.status) {
         case 404:
@@ -301,8 +255,8 @@ const ConnectionsSection = () => {
         return;
       }
       try {
-        const response = await axios.post("/api/users/connections", {
-          userId: user._id,
+        const response = await axios.get("/api/users/connections", {
+          withCredentials: true,
         });
         setConnections(response.data.connections);
       } catch (error) {
@@ -381,7 +335,7 @@ const RecommendationsForm = ({
   const [searchType, setSearchType] = useState(0);
   const [selectedSkills, setSelectedSkills] = useState([]);
 
-  const { user } = useContext(UserContext);
+  const { user } = useAuthStore();
   const userId = user._id;
 
   const handleRadioChange = (e) => {
@@ -420,7 +374,8 @@ const RecommendationsForm = ({
     try {
       const response = await axios.post(
         `/api/users/recommend/${endPoints[searchType].apiUrl}`,
-        endPoints[searchType].apiBody
+        endPoints[searchType].apiBody,
+        { withCredentials: true }
       );
       const unconnectedUsers = response.data.recommendedUsers.filter(
         (recUser) => !user.connections.includes(recUser._id)
