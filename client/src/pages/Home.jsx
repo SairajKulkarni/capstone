@@ -100,10 +100,7 @@ const Home = () => {
   };
 
   return (
-    <Box height="100vh" width="100vw">
-      {/* Navigation bar */}
-      <Navbar />
-
+    <Box>
       {/* Main body */}
       <Box
         style={{

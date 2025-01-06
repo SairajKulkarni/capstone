@@ -1,4 +1,4 @@
-import { useState} from "react";
+import { useState } from "react";
 import { Close, Done, Edit, KeyboardBackspace } from "@mui/icons-material";
 import {
   Autocomplete,
@@ -23,8 +23,8 @@ import axios from "axios";
 import { useAuthStore } from "../store/useAuthStore";
 
 const ProfileBackgroundBox = styled(Box)({
-  height: "100vh",
-  width: "100vw",
+  height: "calc(100vh - 64px)",
+  // width: "100vw",
   display: "flex",
   flexDirection: "column",
   justifyContent: "center",
@@ -43,19 +43,14 @@ const Profile = () => {
     <ProfileBackgroundBox>
       <IconButton
         onClick={() => navigate("/")}
-        style={{ position: "absolute", top: "30px", left: "40px" }}
+        style={{ position: "absolute", top: "80px", left: "40px" }}
       >
         <KeyboardBackspace fontSize="large" />
       </IconButton>
-      {user.name ? (
-        <>
-          <NameSection enqueueSnackbar={enqueueSnackbar} />
-          <Divider />
-          <SkillsSection enqueueSnackbar={enqueueSnackbar} />
-        </>
-      ) : (
-        <CircularProgress />
-      )}
+
+      <NameSection enqueueSnackbar={enqueueSnackbar} />
+      <Divider />
+      <SkillsSection enqueueSnackbar={enqueueSnackbar} />
     </ProfileBackgroundBox>
   );
 };
@@ -190,7 +185,9 @@ const SkillsSection = ({ enqueueSnackbar }) => {
         { withCredentials: true }
       );
       enqueueSnackbar(`Successfully changed skills.`, { variant: "success" });
-      setUser((prev) => { return { ...prev, skills: userSkills }});
+      setUser((prev) => {
+        return { ...prev, skills: userSkills };
+      });
       setEditingSkills(false);
     } catch (error) {
       switch (error.status) {

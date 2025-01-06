@@ -1,58 +1,25 @@
-import { useEffect } from "react";
-import { Routes, Route, Navigate, BrowserRouter } from "react-router-dom";
-import { useAuthStore } from "./store/useAuthStore";
-import { useSnackbar } from "notistack";
+import { Routes, Route, BrowserRouter } from "react-router-dom";
 
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import PageNotFound from "./pages/PageNotFound";
-import "./index.css";
 import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
-import { CircularProgress } from "@mui/material";
+import PrivateRoute from "./components/PrivateRoute";
 
 const App = () => {
-  const { user, checkAuth, isCheckingAuth } = useAuthStore();
-
-  const {enqueueSnackbar} = useSnackbar()
-
-  useEffect(() => {
-    checkAuth(enqueueSnackbar);
-  }, [checkAuth]);
-
-  if (isCheckingAuth)
-    return (
-      <div>
-        <CircularProgress />
-      </div>
-    );
-
   return (
-      <BrowserRouter>
-        <Routes>
-          <Route
-            path="/"
-            element={user ? <Home /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/login"
-            element={!user ? <Login /> : <Navigate to="/" />}
-          />
-          <Route
-            path="/signup"
-            element={!user ? <Signup /> : <Navigate to="/" />}
-          />
-          <Route
-            path="/profile"
-            element={user ? <Profile /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/messages"
-            element={user ? <Messages /> : <Navigate to="/login" />}
-          />
-        </Routes>
-      </BrowserRouter>
+    <BrowserRouter>
+      <Routes>
+        <Route exact path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="" element={<PrivateRoute />}>
+          <Route path="/" element={<Home />}></Route>
+          <Route path="/profile" element={<Profile />}></Route>
+          <Route path="/messages" element={<Messages />}></Route>
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 };
 

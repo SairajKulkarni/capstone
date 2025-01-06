@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import {
   AppBar,
@@ -10,14 +10,18 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-
 import { AccountCircle, Chat } from "@mui/icons-material";
 
+import { useAuthStore } from "../store/useAuthStore";
+
 const Navbar = () => {
+  const { logout } = useAuthStore();
+
   const [accountAnchorEl, setAccountAnchorEl] = useState(null);
   const open = Boolean(accountAnchorEl);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleOpen = (e) => {
     setAccountAnchorEl(e.currentTarget);
@@ -26,22 +30,29 @@ const Navbar = () => {
   const handleClose = () => {
     setAccountAnchorEl(null);
   };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   return (
-    <AppBar position="static">
+    <AppBar position="sticky">
       <Toolbar>
         <Typography variant="h6" sx={{ flexGrow: 1 }}>
           Skill Connect
         </Typography>
-
         <Box>
-          <IconButton
-            size="large"
-            edge="end"
-            sx={{ color: "white", mr: "2" }}
-            onClick={() => navigate("/messages")}
-          >
-            <Chat fontSize="large" />
-          </IconButton>
+          {location.pathname !== "/messages" && (
+            <IconButton
+              size="large"
+              edge="end"
+              sx={{ color: "white", mr: "2px" }}
+              onClick={() => navigate("/messages")}
+            >
+              <Chat fontSize="large" />
+            </IconButton>
+          )}
           <IconButton
             size="large"
             edge="end"
@@ -52,15 +63,27 @@ const Navbar = () => {
           </IconButton>
         </Box>
         <Menu anchorEl={accountAnchorEl} open={open} onClose={handleClose}>
-          <MenuItem onClick={() => navigate("/profile")}>Profile</MenuItem>
-          <MenuItem
-            onClick={() => {
-              localStorage.removeItem("user");
-              navigate("/login");
-            }}
-          >
-            Logout
-          </MenuItem>
+          {location.pathname !== "/profile" ? (
+            <MenuItem
+              onClick={() => {
+                handleClose();
+                navigate("/profile");
+              }}
+            >
+              Profile
+            </MenuItem>
+          ) : (
+            <Box
+              style={{
+                padding: "7px",
+                backgroundColor: "ActiveBorder",
+                textAlign: "center",
+              }}
+            >
+              <Typography>Profile</Typography>
+            </Box>
+          )}
+          <MenuItem onClick={handleLogout}>Logout</MenuItem>
         </Menu>
       </Toolbar>
     </AppBar>

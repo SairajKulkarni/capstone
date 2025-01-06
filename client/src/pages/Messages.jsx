@@ -53,7 +53,7 @@ const Messages = () => {
     <Box
       sx={{
         display: "flex",
-        height: "100vh",
+        height: "calc(100vh - 64px)",
         overflow: "hidden",
         backgroundColor: "#f0f2f5",
       }}
@@ -108,8 +108,6 @@ const Messages = () => {
             onClick={() => navigate("/")} // Redirect to Home page
             sx={{
               marginRight: 2,
-              backgroundColor: "#e0e0e0",
-              "&:hover": { backgroundColor: "#d6d6d6" },
             }}
           >
             <ArrowBackIcon />

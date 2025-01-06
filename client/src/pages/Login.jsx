@@ -38,6 +38,7 @@ const LoginForm = styled("form")({
   justifyContent: "center",
   alignItems: "center",
   gap: "4vh",
+  padding: "10px",
 });
 
 const Login = () => {

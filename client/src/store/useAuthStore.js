@@ -7,7 +7,6 @@ export const useAuthStore = create((set) => ({
     set((state) => ({
       user: typeof update === "function" ? update(state.user) : update,
     }));
-    
   },
 
   isCheckingAuth: true,
@@ -42,6 +41,14 @@ export const useAuthStore = create((set) => ({
       return { success: false, error };
     } finally {
       setLoading(false);
+    }
+  },
+
+  logout: async () => {
+    try {
+      const res = await axios.get("/api/auth/logout");
+    } catch (error) {
+      console.log(error);
     }
   },
 }));

@@ -38,6 +38,7 @@ const SignupForm = styled("form")({
   justifyContent: "center",
   alignItems: "center",
   gap: "10px",
+  padding: "10px",
 });
 
 const Signup = () => {

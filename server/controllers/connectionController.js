@@ -33,7 +33,7 @@ export const connectUsers = async (req, res) => {
       const cappedDiff = Math.min(diff, 10);
       const rewardForA = cappedDiff * 0.2;
 
-      userA.score += rewardForA;
+      userA.score += Math.round(rewardForA);
       userB.score += 5; // Flat reward for higher score user
     } else if (scoreA > scoreB) {
       // User B has the lower score
@@ -41,7 +41,7 @@ export const connectUsers = async (req, res) => {
       const cappedDiff = Math.min(diff, 10);
       const rewardForB = cappedDiff * 0.2;
 
-      userB.score += rewardForB;
+      userB.score += Math.round(rewardForB);
       userA.score += 5; // Flat reward for higher score user
     } else {
       // If scores are equal, both users get an equal reward
