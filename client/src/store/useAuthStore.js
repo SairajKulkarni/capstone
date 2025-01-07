@@ -1,7 +1,10 @@
 import axios from "axios";
 import { create } from "zustand";
+import { io } from "socket.io-client";
 
-export const useAuthStore = create((set) => ({
+const BASE_URL = "http://localhost:3000";
+
+export const useAuthStore = create((set, get) => ({
   user: null,
   setUser: (update) => {
     set((state) => ({
@@ -9,16 +12,17 @@ export const useAuthStore = create((set) => ({
     }));
   },
 
+  socket: null,
+  onlineUsers: [],
+
   isCheckingAuth: true,
-  checkAuth: async (enqueueSnackbar) => {
+  checkAuth: async () => {
     try {
       const res = await axios.get("/api/auth/check");
       set({ user: res.data });
+      get().connectSocket();
     } catch (error) {
       set({ user: null });
-      enqueueSnackbar("Error in authenticating. Please login in again", {
-        variant: "error",
-      });
     } finally {
       set({ isCheckingAuth: false });
     }
@@ -36,6 +40,7 @@ export const useAuthStore = create((set) => ({
         { withCredentials: true }
       );
       set({ user: res.data.user });
+      get().connectSocket();
       return { success: true };
     } catch (error) {
       return { success: false, error };
@@ -47,8 +52,29 @@ export const useAuthStore = create((set) => ({
   logout: async () => {
     try {
       const res = await axios.get("/api/auth/logout");
+      set({ user: null });
+      get().disconnectSocket();
     } catch (error) {
       console.log(error);
     }
+  },
+
+  connectSocket: () => {
+    const { user } = get();
+    if (!user || get().socket?.connected) return;
+    const socket = io(BASE_URL, {
+      query: {
+        userId: user._id,
+      },
+    });
+    socket.connect();
+    set({ socket: socket });
+    socket.on("getOnlineUsers", (userIds) => {
+      set({ onlineUsers: userIds });
+    });
+  },
+  disconnectSocket: () => {
+    if (get().socket?.connected) get().socket.disconnect();
+    set({ socket: null });
   },
 }));

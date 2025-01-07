@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
+import axios from "axios";
 import {
   Autocomplete,
   Avatar,
@@ -25,15 +26,12 @@ import {
   Typography,
 } from "@mui/material";
 import styled from "@emotion/styled";
-// import MenuIcon from "@mui/icons-material/Menu";
 import { Delete } from "@mui/icons-material";
-import { useSnackbar } from "notistack";
 
+import { useSnackbar } from "notistack";
+import { useAuthStore } from "../store/useAuthStore.js";
 import { skills } from "../utils/dummyData.js";
 import stringAvatar from "../utils/avatarString.js";
-import axios from "axios";
-import { useAuthStore } from "../store/useAuthStore.js";
-import Navbar from "../components/Navbar.jsx";
 
 const RecommendationsBox = styled(Box)({
   marginTop: "20px",

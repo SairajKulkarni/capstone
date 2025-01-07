@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -9,14 +10,11 @@ import {
   Typography,
 } from "@mui/material";
 import styled from "@emotion/styled";
-import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+
 import { useSnackbar } from "notistack";
-
-import PasswordField from "../components/PasswordField";
-
-import Logo from "../assets/network-icon-1897-Windows.ico";
 import { useAuthStore } from "../store/useAuthStore";
+import PasswordField from "../components/PasswordField";
+import Logo from "../assets/network-icon-1897-Windows.ico";
 
 const BackgroundBox = styled(Box)({
   width: "100vw",

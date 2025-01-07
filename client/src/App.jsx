@@ -1,22 +1,74 @@
-import { Routes, Route, BrowserRouter } from "react-router-dom";
+import { useEffect } from "react";
+import {
+  BrowserRouter,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+} from "react-router-dom";
 
+import { Box, CircularProgress } from "@mui/material";
+import { useAuthStore } from "./store/useAuthStore";
+
+import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
-import Signup from "./pages/Signup";
 import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
-import PrivateRoute from "./components/PrivateRoute";
+import Signup from "./pages/Signup";
 
 const App = () => {
+  const { user, checkAuth, isCheckingAuth } = useAuthStore();
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  if (isCheckingAuth) {
+    return (
+      <Box
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
   return (
     <BrowserRouter>
       <Routes>
-        <Route exact path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="" element={<PrivateRoute />}>
-          <Route path="/" element={<Home />}></Route>
-          <Route path="/profile" element={<Profile />}></Route>
-          <Route path="/messages" element={<Messages />}></Route>
+        <Route
+          exact
+          path="/login"
+          element={!user ? <Login /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/signup"
+          element={!user ? <Signup /> : <Navigate to="/" />}
+        />
+        <Route
+          path=""
+          element={
+            <>
+              <Navbar /> <Outlet />
+            </>
+          }
+        >
+          <Route
+            path="/"
+            element={user ? <Home /> : <Navigate to="/login" />}
+          ></Route>
+          <Route
+            path="/profile"
+            element={user ? <Profile /> : <Navigate to="/login" />}
+          ></Route>
+          <Route
+            path="/messages"
+            element={user ? <Messages /> : <Navigate to="/login" />}
+          ></Route>
         </Route>
       </Routes>
     </BrowserRouter>

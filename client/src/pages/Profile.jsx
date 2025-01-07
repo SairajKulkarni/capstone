@@ -1,4 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import PropTypes from "prop-types";
+
+import styled from "@emotion/styled";
 import { Close, Done, Edit, KeyboardBackspace } from "@mui/icons-material";
 import {
   Autocomplete,
@@ -12,15 +17,11 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import styled from "@emotion/styled";
-import { useNavigate } from "react-router-dom";
-import stringAvatar from "../utils/avatarString";
-import { useSnackbar } from "notistack";
 
-import { skills } from "../utils/dummyData";
-import PropTypes from "prop-types";
-import axios from "axios";
+import { useSnackbar } from "notistack";
 import { useAuthStore } from "../store/useAuthStore";
+import { skills } from "../utils/dummyData";
+import stringAvatar from "../utils/avatarString";
 
 const ProfileBackgroundBox = styled(Box)({
   height: "calc(100vh - 64px)",
