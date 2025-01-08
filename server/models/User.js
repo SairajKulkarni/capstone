@@ -8,8 +8,11 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     profilePic: { type: String, default: "" },
     score: { type: Number, default: 0 },
-    skills: [{ type: String }],
-    connections: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    skills: { type: [{ type: String }], default: [] },
+    connections: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+      default: [],
+    },
   },
   { timestamps: true }
 );

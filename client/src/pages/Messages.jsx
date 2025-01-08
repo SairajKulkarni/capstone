@@ -7,9 +7,11 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {
   Box,
   Button,
+  CircularProgress,
   IconButton,
   List,
-  ListItem,
+  ListItemAvatar,
+  ListItemButton,
   ListItemText,
   Paper,
   TextField,
@@ -18,6 +20,7 @@ import {
 
 import { useSnackbar } from "notistack";
 import { useAuthStore } from "../store/useAuthStore";
+import UserAvatar from "../components/UserAvatar";
 
 const Messages = () => {
   const [selectedConnection, setSelectedConnection] = useState(null);
@@ -31,36 +34,43 @@ const Messages = () => {
         backgroundColor: "#f0f2f5",
       }}
     >
-      {/* Left Pane: User List */}
       <ConnectionsList
         selectedConnection={selectedConnection}
         setSelectedConnection={setSelectedConnection}
       />
-      {/* Right Pane: Chat Window */}
-      <Chat selectedConnection={selectedConnection} />
+      <ChatWindow selectedConnection={selectedConnection} />
     </Box>
   );
 };
 
 const ConnectionsList = ({ selectedConnection, setSelectedConnection }) => {
-  const [connections, setUsers] = useState([]);
+  const { onlineUsers } = useAuthStore();
+
+  const [connections, setConnections] = useState([]);
+  const [connectionsLoading, setConnectionsLoading] = useState(true);
+  const [connectionsError, setConnectionsError] = useState(false);
 
   const handleUserClick = (user) => {
     setSelectedConnection(user);
   };
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const getConnections = async () => {
+      setConnectionsLoading(true);
+      setConnectionsError(false);
       try {
         const response = await axios.get("/api/users/connections", {
           withCredentials: true,
-        }); // Replace with your backend endpoint
-        setUsers(response.data.connections);
+        });
+        setConnections(response.data.connections);
       } catch (error) {
         console.error("Error fetching users:", error);
+        setConnectionsError(true);
+      } finally {
+        setConnectionsLoading(false);
       }
     };
-    fetchUsers();
+    getConnections();
   }, []);
 
   return (
@@ -77,27 +87,69 @@ const ConnectionsList = ({ selectedConnection, setSelectedConnection }) => {
       <Typography variant="h6" gutterBottom>
         Users
       </Typography>
-      <List>
-        {connections.map((user) => (
-          <ListItem
-            key={user._id}
-            onClick={() => handleUserClick(user)}
-            sx={{
-              borderRadius: "5px",
-              backgroundColor:
-                selectedConnection?._id === user._id
-                  ? "#e0f7fa"
-                  : "transparent",
-              "&:hover": {
-                backgroundColor: "#f1f1f1",
-              },
-              mb: 1,
-            }}
-          >
-            <ListItemText primary={user.name} />
-          </ListItem>
-        ))}
-      </List>
+      {connectionsLoading ? (
+        <Box
+          width="100%"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "20px",
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      ) : connectionsError ? (
+        <Box
+          width="100%"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "20px",
+          }}
+        >
+          <Typography> An error occurred.</Typography>
+        </Box>
+      ) : connections.length === 0 ? (
+        <Box
+          width="100%"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "20px",
+          }}
+        >
+          <Typography>You have no connections yet.</Typography>
+        </Box>
+      ) : (
+        <List>
+          {connections.map((user) => (
+            <ListItemButton
+              disableGutters
+              key={user._id}
+              onClick={() => handleUserClick(user)}
+              sx={{
+                borderRadius: "5px",
+                backgroundColor:
+                  selectedConnection?._id === user._id
+                    ? "#e0f7fa"
+                    : "transparent",
+                "&:hover": {
+                  backgroundColor: "#f1f1f1",
+                },
+                mb: 1,
+              }}
+            >
+              <ListItemAvatar>
+                <UserAvatar user={user} />
+              </ListItemAvatar>
+              <ListItemText
+                primary={user.name}
+                secondary={onlineUsers.includes(user._id) ? "Online" : ""}
+              />
+            </ListItemButton>
+          ))}
+        </List>
+      )}
     </Paper>
   );
 };
@@ -107,24 +159,29 @@ ConnectionsList.propTypes = {
   setSelectedConnection: PropTypes.func.isRequired,
 };
 
-const Chat = ({ selectedConnection }) => {
+const ChatWindow = ({ selectedConnection }) => {
   const [chats, setChats] = useState([]);
   const [text, setText] = useState("");
   const [image, setImage] = useState("");
   const { socket } = useAuthStore();
 
+  const [chatsLoading, setChatsLoading] = useState(true);
+  const [chatsError, setChatsError] = useState(false);
+
   const chatEndRef = useRef(null);
 
-  const navigate = useNavigate(); // Used for navigation
+  const navigate = useNavigate();
 
   const { enqueueSnackbar } = useSnackbar();
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
+    const formText = text.trim();
+    if (formText === "") return;
     try {
       const newMessage = await axios.post(
         `/api/chat/send/${selectedConnection._id}`,
-        { text, image }
+        { text: formText, image }
       );
       setChats((prev) => [...prev, newMessage.data.newMessage]);
       setText("");
@@ -137,11 +194,16 @@ const Chat = ({ selectedConnection }) => {
 
   useEffect(() => {
     const fetchChats = async (userId) => {
+      setChatsLoading(true);
+      setChatsError(false);
       try {
         const response = await axios.get(`/api/chat/${userId}`);
         setChats(response.data.messages);
       } catch (error) {
         console.error("Error fetching chats:", error);
+        setChatsError(true);
+      } finally {
+        setChatsLoading(false);
       }
     };
 
@@ -205,40 +267,66 @@ const Chat = ({ selectedConnection }) => {
               borderRadius: "5px",
             }}
           >
-            <Typography align="center" mb="6px">
-              This is the start of the conversation
-            </Typography>
-            <hr style={{ marginBottom: "13px" }} />
-            {chats.map((chat, index) => (
+            {chatsLoading ? (
               <Box
-                key={index}
-                ref={chatEndRef}
-                sx={{
+                width="100%"
+                style={{
                   display: "flex",
-                  flexDirection: "column",
-                  alignItems:
-                    chat.senderId === selectedConnection._id
-                      ? "flex-start"
-                      : "flex-end",
-                  mb: 2,
+                  justifyContent: "center",
+                  marginTop: "20px",
                 }}
               >
-                <Box
-                  sx={{
-                    maxWidth: "70%",
-                    padding: "10px",
-                    borderRadius: "10px",
-                    backgroundColor:
-                      chat.senderId === selectedConnection._id
-                        ? "#e0f7fa"
-                        : "#f1f1f1",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                  }}
-                >
-                  <Typography>{chat.text}</Typography>
-                </Box>
+                <CircularProgress />
               </Box>
-            ))}
+            ) : chatsError ? (
+              <Box
+                width="100%"
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  marginTop: "20px",
+                }}
+              >
+                <Typography> An error occurred.</Typography>
+              </Box>
+            ) : (
+              <>
+                <Typography align="center" mb="6px">
+                  This is the start of the conversation
+                </Typography>
+                <hr style={{ marginBottom: "13px" }} />
+                {chats.map((chat, index) => (
+                  <Box
+                    key={index}
+                    ref={chatEndRef}
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems:
+                        chat.senderId === selectedConnection._id
+                          ? "flex-start"
+                          : "flex-end",
+                      mb: 2,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        maxWidth: "70%",
+                        padding: "10px",
+                        borderRadius: "10px",
+                        backgroundColor:
+                          chat.senderId === selectedConnection._id
+                            ? "#e0f7fa"
+                            : "#f1f1f1",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                      }}
+                    >
+                      <Typography>{chat.text}</Typography>
+                    </Box>
+                  </Box>
+                ))}
+              </>
+            )}
           </Box>
           <form
             autoComplete="off"
@@ -271,7 +359,7 @@ const Chat = ({ selectedConnection }) => {
   );
 };
 
-Chat.propTypes = {
+ChatWindow.propTypes = {
   selectedConnection: PropTypes.object,
 };
 

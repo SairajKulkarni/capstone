@@ -28,6 +28,7 @@ const App = () => {
     return (
       <Box
         style={{
+          height: "100vh",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",

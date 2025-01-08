@@ -4,10 +4,15 @@ import axios from "axios";
 import PropTypes from "prop-types";
 
 import styled from "@emotion/styled";
-import { Close, Done, Edit, KeyboardBackspace } from "@mui/icons-material";
+import {
+  CameraAlt,
+  Close,
+  Done,
+  Edit,
+  KeyboardBackspace,
+} from "@mui/icons-material";
 import {
   Autocomplete,
-  Avatar,
   Box,
   Button,
   CircularProgress,
@@ -21,7 +26,7 @@ import {
 import { useSnackbar } from "notistack";
 import { useAuthStore } from "../store/useAuthStore";
 import { skills } from "../utils/dummyData";
-import stringAvatar from "../utils/avatarString";
+import UserAvatar from "../components/UserAvatar";
 
 const ProfileBackgroundBox = styled(Box)({
   height: "calc(100vh - 64px)",
@@ -33,10 +38,20 @@ const ProfileBackgroundBox = styled(Box)({
   gap: "20px",
 });
 
+const HiddenInput = styled("input")({
+  clip: "rect(0 0 0 0)",
+  clipPath: "inset(50%)",
+  height: 1,
+  overflow: "hidden",
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  whiteSpace: "nowrap",
+  width: 1,
+});
+
 const Profile = () => {
   const { enqueueSnackbar } = useSnackbar();
-
-  const { user } = useAuthStore();
 
   const navigate = useNavigate();
 
@@ -61,6 +76,38 @@ const NameSection = ({ enqueueSnackbar }) => {
   const [editingName, setEditingName] = useState(false);
   const [nameLoading, setNameLoading] = useState(false);
   const [userName, setUserName] = useState(user.name);
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.readAsDataURL(file);
+
+    reader.onload = async () => {
+      const base64Image = reader.result;
+      try {
+        const res = await axios.put(
+          "/api/users/editProfilePic",
+          {
+            profilePic: base64Image,
+          },
+          { withCredentials: true }
+        );
+        setUser((prev) => {
+          return {
+            ...prev,
+            profilePic: base64Image,
+          };
+        });
+      } catch (error) {
+        if (error.status === 400)
+          enqueueSnackbar("Profile picture is required", { variant: "error" });
+        enqueueSnackbar("Internal Server Error", { variant: "error" });
+      }
+    };
+  };
 
   const handleNameChange = async (e) => {
     e.preventDefault();
@@ -104,13 +151,35 @@ const NameSection = ({ enqueueSnackbar }) => {
 
   return (
     <>
-      <Avatar
-        {...stringAvatar(user.name, {
-          height: "100px",
-          width: "100px",
-          fontSize: "50px",
-        })}
-      />
+      <Box style={{ position: "relative" }}>
+        <UserAvatar
+          user={user}
+          style={{
+            height: "100px",
+            width: "100px",
+            fontSize: "50px",
+            border: "2px solid black",
+          }}
+        />
+        <IconButton
+          component="label"
+          style={{
+            position: "absolute",
+            bottom: -5,
+            right: -5,
+            background: "white",
+            border: "1px solid black",
+            padding: "7px",
+          }}
+        >
+          <CameraAlt />
+          <HiddenInput
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+          />
+        </IconButton>
+      </Box>
       {editingName ? (
         <form
           style={{

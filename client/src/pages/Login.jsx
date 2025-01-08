@@ -53,7 +53,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const result = await login(username, password, setLoading);
+    const result = await login(username.trim(), password.trim(), setLoading);
 
     if (result.success) navigate("/");
     else {

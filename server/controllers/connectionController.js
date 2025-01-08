@@ -62,27 +62,20 @@ export const connectUsers = async (req, res) => {
 
 export const getUserConnections = async (req, res) => {
   try {
-    const { _id:userId } = req.user;
+    const { _id: userId } = req.user;
     // Find the user by their ID
     const user = await User.findById(userId).populate(
       "connections",
-      "name score skills"
+      "name score profilePic"
     );
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Map connections to include only _id, name, and score
-    const connections = user.connections.map((connection) => ({
-      _id: connection._id,
-      name: connection.name,
-      score: connection.score,
-    }));
-
     // Return the filtered connections
     res.status(200).json({
-      connections,
+      connections: user.connections,
     });
   } catch (error) {
     res

@@ -10,12 +10,13 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import { AccountCircle, Chat } from "@mui/icons-material";
+import { Chat } from "@mui/icons-material";
 
 import { useAuthStore } from "../store/useAuthStore";
+import UserAvatar from "./UserAvatar";
 
 const Navbar = () => {
-  const { logout } = useAuthStore();
+  const { user, logout } = useAuthStore();
 
   const [accountAnchorEl, setAccountAnchorEl] = useState(null);
   const open = Boolean(accountAnchorEl);
@@ -59,7 +60,7 @@ const Navbar = () => {
             sx={{ color: "white" }}
             onClick={handleOpen}
           >
-            <AccountCircle fontSize="large" />
+            <UserAvatar user={user} />
           </IconButton>
         </Box>
         <Menu anchorEl={accountAnchorEl} open={open} onClose={handleClose}>

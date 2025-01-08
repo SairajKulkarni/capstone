@@ -6,6 +6,7 @@ import {
 } from "../controllers/connectionController.js";
 import {
   createUsersBulk,
+  editProfilePic,
   editUser,
   getUserProfile,
 } from "../controllers/userController.js";
@@ -40,6 +41,8 @@ router.get("/connections", authenticate, getUserConnections);
 router.post("/disconnect", authenticate, disconnectUsers);
 
 router.put("/edit", authenticate, editUser);
+
+router.put("/editProfilePic", authenticate, editProfilePic);
 
 router.get("/profile", authenticate, getUserProfile);
 

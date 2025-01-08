@@ -14,6 +14,9 @@ const validatePassword = (password) => {
   if (!/[#@&]/.test(password)) {
     return false;
   }
+  if (/\s/.test(password)) {
+    return false;
+  }
   return true;
 };
 

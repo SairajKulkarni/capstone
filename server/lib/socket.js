@@ -22,7 +22,8 @@ io.on("connection", (socket) => {
   if (userId) userSocketMap[userId] = socket.id;
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
   socket.on("disconnect", () => {
-    delete userSocketMap.userId;
+    delete userSocketMap[userId];
+    io.emit("getOnlineUsers", Object.keys(userSocketMap));
   });
 });
 

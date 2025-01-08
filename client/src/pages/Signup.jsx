@@ -71,9 +71,9 @@ const Signup = () => {
       const response = await axios.post(
         "/api/auth/signup",
         {
-          username: username,
-          name: name,
-          password: password,
+          username: username.trim(),
+          name: name.trim(),
+          password: password.trim(),
         },
         { withCredentials: true }
       );

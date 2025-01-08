@@ -32,6 +32,7 @@ import { useSnackbar } from "notistack";
 import { useAuthStore } from "../store/useAuthStore.js";
 import { skills } from "../utils/dummyData.js";
 import stringAvatar from "../utils/avatarString.js";
+import UserAvatar from "../components/UserAvatar.jsx";
 
 const RecommendationsBox = styled(Box)({
   marginTop: "20px",
@@ -306,7 +307,8 @@ const ConnectionsSection = () => {
         <List style={{ height: "90%", overflowY: "auto" }}>
           {connections.map((conn) => (
             <ListItem key={conn._id} style={{ display: "flex", width: "100%" }}>
-              <Avatar {...stringAvatar(conn.name, { mr: 3 })} />
+              {/* <Avatar {...stringAvatar(conn.name, { mr: 3 })} /> */}
+              <UserAvatar user={conn} style={{ mr: 3 }} />
               <Typography sx={{ flexGrow: 1 }}>{conn.name}</Typography>
               <Typography mr={2}>{conn.score}</Typography>
               <IconButton onClick={() => handleDisconnect(conn._id, conn.name)}>
