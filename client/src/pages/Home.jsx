@@ -18,6 +18,7 @@ import {
   IconButton,
   List,
   ListItem,
+  ListItemButton,
   Paper,
   Radio,
   RadioGroup,
@@ -33,6 +34,7 @@ import { useAuthStore } from "../store/useAuthStore.js";
 import { skills } from "../utils/dummyData.js";
 import stringAvatar from "../utils/avatarString.js";
 import UserAvatar from "../components/UserAvatar.jsx";
+import { useNavigate } from "react-router-dom";
 
 const RecommendationsBox = styled(Box)({
   marginTop: "20px",
@@ -51,6 +53,7 @@ const Home = () => {
   const [noRecommendations, setNoRecommendations] = useState(false);
 
   const { user, setUser } = useAuthStore();
+  const navigate = useNavigate();
 
   const handleConnectClick = async (id, name) => {
     // Get response from API call
@@ -153,7 +156,7 @@ const Home = () => {
                 recommendedUsers.length !== 0 &&
                 recommendedUsers.map((user) => (
                   <Grid2 key={user._id}>
-                    <Card>
+                    <Card sx={{ height: "225px", width: "250px" }}>
                       <CardHeader
                         avatar={<Avatar {...stringAvatar(user.name)} />}
                         title={
@@ -171,7 +174,17 @@ const Home = () => {
                         <Typography fontSize={18} fontWeight={"bold"}>
                           Skills:
                         </Typography>
-                        <Typography>{user.skills.join(", ")}</Typography>
+                        <Typography
+                          sx={{
+                            width: "223px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxHeight: "20px",
+                          }}
+                        >
+                          {user.skills.join(", ")}
+                        </Typography>
                       </CardContent>
                       <CardActions>
                         <Button
@@ -181,6 +194,12 @@ const Home = () => {
                           }
                         >
                           Connect
+                        </Button>
+                        <Button
+                          variant="contained"
+                          onClick={() => navigate(`/view/${user._id}`)}
+                        >
+                          View
                         </Button>
                       </CardActions>
                     </Card>
@@ -203,7 +222,7 @@ const ConnectionsSection = () => {
   const [connectionsError, setConnectionsError] = useState(false);
 
   const { user, setUser } = useAuthStore();
-
+  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
 
   const handleDisconnect = async (id, name) => {
@@ -306,15 +325,20 @@ const ConnectionsSection = () => {
       ) : (
         <List style={{ height: "90%", overflowY: "auto" }}>
           {connections.map((conn) => (
-            <ListItem key={conn._id} style={{ display: "flex", width: "100%" }}>
-              {/* <Avatar {...stringAvatar(conn.name, { mr: 3 })} /> */}
+            <ListItemButton
+              key={conn._id}
+              style={{ display: "flex", width: "100%" }}
+              onClick={() => {
+                navigate(`/view/${conn._id}`);
+              }}
+            >
               <UserAvatar user={conn} style={{ mr: 3 }} />
               <Typography sx={{ flexGrow: 1 }}>{conn.name}</Typography>
               <Typography mr={2}>{conn.score}</Typography>
               <IconButton onClick={() => handleDisconnect(conn._id, conn.name)}>
                 <Delete />
               </IconButton>
-            </ListItem>
+            </ListItemButton>
           ))}
         </List>
       )}

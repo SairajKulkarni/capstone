@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {
   AppBar,
   Box,
+  Button,
   IconButton,
   Menu,
   MenuItem,
@@ -40,9 +41,17 @@ const Navbar = () => {
   return (
     <AppBar position="sticky">
       <Toolbar>
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
-          Skill Connect
-        </Typography>
+        <Box sx={{ flexGrow: 1 }}>
+          <Button
+            variant="text"
+            onClick={() => {
+              navigate("/");
+            }}
+            sx={{ color: "white" }}
+          >
+            Skill Connect
+          </Button>
+        </Box>
         <Box>
           {location.pathname !== "/messages" && (
             <IconButton

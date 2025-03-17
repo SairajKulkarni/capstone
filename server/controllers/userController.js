@@ -66,11 +66,11 @@ export const editProfilePic = async (req, res) => {
 
 export const getUserProfile = async (req, res) => {
   try {
-    const userId = req.userId; // Extracted from authenticate middleware
+    const { id } = req.params;
 
     // Find the user by ID and populate connections
-    const user = await User.findById(userId)
-      .populate("connections", "name score")
+    const user = await User.findById(id)
+      .populate("connections", "name score profilePic")
       .select("-password -__v"); // Exclude password and version fields
 
     if (!user) {

@@ -6,6 +6,7 @@ import cors from "cors";
 import userRoutes from "./routes/userRoutes.js";
 import authRoutes from "./routes/authenticationRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
+import verificationRoutes from "./routes/verificationRoutes.js";
 
 import { app, server } from "./lib/socket.js";
 
@@ -27,10 +28,11 @@ mongoose
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.log(err));
 
-// Routes 
+// Routes
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/chat", messageRoutes);
+app.use("/api/verify", verificationRoutes);
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

@@ -104,6 +104,8 @@ const NameSection = ({ enqueueSnackbar }) => {
       } catch (error) {
         if (error.status === 400)
           enqueueSnackbar("Profile picture is required", { variant: "error" });
+        if (error.status === 413)
+          enqueueSnackbar("Uploaded photo is too large", { variant: "error" });
         enqueueSnackbar("Internal Server Error", { variant: "error" });
       }
     };

@@ -32,6 +32,7 @@ export const login = async (req, res) => {
         score: user.score,
         skills: user.skills,
         connections: user.connections,
+        profilePic: user.profilePic,
       },
     });
   } catch (error) {

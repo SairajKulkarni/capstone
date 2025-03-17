@@ -44,6 +44,6 @@ router.put("/edit", authenticate, editUser);
 
 router.put("/editProfilePic", authenticate, editProfilePic);
 
-router.get("/profile", authenticate, getUserProfile);
+router.get("/viewProfile/:id", authenticate, getUserProfile);
 
 export default router;

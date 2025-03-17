@@ -16,6 +16,7 @@ import Login from "./pages/Login";
 import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
 import Signup from "./pages/Signup";
+import ViewProfile from "./pages/ViewProfile";
 
 const App = () => {
   const { user, checkAuth, isCheckingAuth } = useAuthStore();
@@ -53,23 +54,19 @@ const App = () => {
         <Route
           path=""
           element={
-            <>
-              <Navbar /> <Outlet />
-            </>
+            user ? (
+              <>
+                <Navbar /> <Outlet />
+              </>
+            ) : (
+              <Navigate to="/login" />
+            )
           }
         >
-          <Route
-            path="/"
-            element={user ? <Home /> : <Navigate to="/login" />}
-          ></Route>
-          <Route
-            path="/profile"
-            element={user ? <Profile /> : <Navigate to="/login" />}
-          ></Route>
-          <Route
-            path="/messages"
-            element={user ? <Messages /> : <Navigate to="/login" />}
-          ></Route>
+          <Route path="/" element={<Home />}></Route>
+          <Route path="/profile" element={<Profile />}></Route>
+          <Route path="/view/:id" element={<ViewProfile />}></Route>
+          <Route path="/messages" element={<Messages />}></Route>
         </Route>
       </Routes>
     </BrowserRouter>
