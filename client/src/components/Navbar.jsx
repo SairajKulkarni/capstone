@@ -10,8 +10,9 @@ import {
   MenuItem,
   Toolbar,
   Typography,
+  Tooltip,
 } from "@mui/material";
-import { Chat } from "@mui/icons-material";
+import { Chat, WorkspacePremium } from "@mui/icons-material";
 
 import { useAuthStore } from "../store/useAuthStore";
 import UserAvatar from "./UserAvatar";
@@ -54,15 +55,27 @@ const Navbar = () => {
         </Box>
         <Box>
           {location.pathname !== "/messages" && (
+            <Tooltip title="Messages">
+              <IconButton
+                size="large"
+                edge="end"
+                sx={{ color: "white", mr: "2px" }}
+                onClick={() => navigate("/messages")}
+              >
+                <Chat fontSize="large" />
+              </IconButton>
+            </Tooltip>
+          )}
+          <Tooltip title="Add Certification">
             <IconButton
               size="large"
               edge="end"
               sx={{ color: "white", mr: "2px" }}
-              onClick={() => navigate("/messages")}
+              onClick={() => navigate("/add-certification")}
             >
-              <Chat fontSize="large" />
+              <WorkspacePremium fontSize="large" />
             </IconButton>
-          )}
+          </Tooltip>
           <IconButton
             size="large"
             edge="end"

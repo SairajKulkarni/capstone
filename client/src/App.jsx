@@ -17,6 +17,7 @@ import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
 import Signup from "./pages/Signup";
 import ViewProfile from "./pages/ViewProfile";
+import AddCertification from "./pages/AddCertification";
 
 const App = () => {
   const { user, checkAuth, isCheckingAuth } = useAuthStore();
@@ -67,6 +68,7 @@ const App = () => {
           <Route path="/profile" element={<Profile />}></Route>
           <Route path="/view/:id" element={<ViewProfile />}></Route>
           <Route path="/messages" element={<Messages />}></Route>
+          <Route path="/add-certification" element={<AddCertification />} />
         </Route>
       </Routes>
     </BrowserRouter>
