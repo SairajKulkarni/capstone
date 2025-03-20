@@ -25,10 +25,13 @@ const BackgroundBox = styled(Box)({
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
+  padding: "20px",
+  boxSizing: "border-box",
 });
 
 const SignupForm = styled("form")({
-  width: "30vw",
+  width: "90vw",
+  maxWidth: "400px",
   minHeight: "75vh",
   backgroundColor: "white",
   borderRadius: "20px",
@@ -37,7 +40,8 @@ const SignupForm = styled("form")({
   justifyContent: "center",
   alignItems: "center",
   gap: "10px",
-  padding: "10px",
+  padding: "20px",
+  boxSizing: "border-box",
 });
 
 const Signup = () => {
@@ -106,7 +110,7 @@ const Signup = () => {
       <SignupForm autoComplete="off" onSubmit={handleSubmit}>
         <img src={Logo} alt="logo" />
         <Typography>Sign Up</Typography>
-        <FormControl error={usernameError} sx={{ width: "60%" }}>
+        <FormControl error={usernameError} sx={{ width: "100%" }}>
           <TextField
             autoFocus
             required
@@ -119,7 +123,7 @@ const Signup = () => {
             <FormHelperText>Username already exists.</FormHelperText>
           )}
         </FormControl>
-        <FormControl sx={{ width: "60%" }}>
+        <FormControl sx={{ width: "100%" }}>
           <TextField
             required
             label={"Enter Name"}
@@ -129,7 +133,7 @@ const Signup = () => {
         </FormControl>
         <FormControl
           error={passwordError || confirmPasswordError}
-          sx={{ width: "60%" }}
+          sx={{ width: "100%" }}
         >
           <PasswordField
             label={"Enter Password"}
@@ -161,7 +165,7 @@ const Signup = () => {
         </FormControl>
         <FormControl
           error={passwordError || confirmPasswordError}
-          sx={{ width: "60%" }}
+          sx={{ width: "100%" }}
         >
           <PasswordField
             label={"Confirm Password"}

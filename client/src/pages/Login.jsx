@@ -24,19 +24,22 @@ const BackgroundBox = styled(Box)({
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
+  padding: "20px",
 });
 
 const LoginForm = styled("form")({
-  width: "30vw",
-  height: "75vh",
+  width: "90vw",
+  maxWidth: "400px",
+  height: "auto",
   backgroundColor: "white",
   borderRadius: "20px",
   display: "flex",
   flexDirection: "column",
   justifyContent: "center",
   alignItems: "center",
-  gap: "4vh",
-  padding: "10px",
+  gap: "2vh",
+  padding: "20px",
+  boxSizing: "border-box",
 });
 
 const Login = () => {
@@ -77,9 +80,9 @@ const Login = () => {
   return (
     <BackgroundBox>
       <LoginForm autoComplete="off" onSubmit={handleSubmit}>
-        <img src={Logo} alt="logo" />
+        <img src={Logo} alt="logo" style={{ width: "50px", height: "50px" }} />
         <Typography>Login</Typography>
-        <FormControl error={error} sx={{ width: "60%" }}>
+        <FormControl error={error} sx={{ width: "100%" }}>
           <TextField
             autoFocus
             required
@@ -89,7 +92,7 @@ const Login = () => {
             onChange={(e) => setUsername(e.target.value)}
           />
         </FormControl>
-        <FormControl error={error} sx={{ width: "60%" }}>
+        <FormControl error={error} sx={{ width: "100%" }}>
           <PasswordField
             label={"Password"}
             value={password}
@@ -105,11 +108,11 @@ const Login = () => {
         {loading ? (
           <CircularProgress />
         ) : (
-          <Button type="submit" variant="contained">
+          <Button type="submit" variant="contained" sx={{ width: "100%" }}>
             Login
           </Button>
         )}
-        <Typography fontSize={15}>
+        <Typography fontSize={15} textAlign="center">
           Don&#39;t have an account? Click <Link to={"/signup"}>here</Link> to
           sign up instead.
         </Typography>
