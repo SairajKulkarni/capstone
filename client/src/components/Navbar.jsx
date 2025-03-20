@@ -76,7 +76,7 @@ const Navbar = () => {
           </IconButton>
         </Box>
         <Menu anchorEl={accountAnchorEl} open={open} onClose={handleClose}>
-          {location.pathname !== "/profile" ? (
+          {location.pathname !== "/profile" && (
             <MenuItem
               onClick={() => {
                 handleClose();
@@ -85,16 +85,6 @@ const Navbar = () => {
             >
               Profile
             </MenuItem>
-          ) : (
-            <Box
-              style={{
-                padding: "7px",
-                backgroundColor: "ActiveBorder",
-                textAlign: "center",
-              }}
-            >
-              <Typography>Profile</Typography>
-            </Box>
           )}
           <MenuItem onClick={handleLogout}>Logout</MenuItem>
         </Menu>

@@ -22,7 +22,7 @@ const PasswordField = ({ label, value, error, onChange }) => {
               <IconButton
                 onClick={() => setPasswordVisibility((prev) => !prev)}
               >
-                {passwordVisibility ? <VisibilityOff /> : <Visibility />}
+                {passwordVisibility ? <Visibility /> : <VisibilityOff />}
               </IconButton>
             </InputAdornment>
           ),
