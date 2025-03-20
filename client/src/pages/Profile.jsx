@@ -67,6 +67,15 @@ const Profile = () => {
       <NameSection enqueueSnackbar={enqueueSnackbar} />
       <Divider />
       <SkillsSection enqueueSnackbar={enqueueSnackbar} />
+
+      <Button
+        variant="contained"
+        color="primary"
+        style={{ marginTop: "20px" }}
+        onClick={() => navigate("/certification")}
+      >
+        Add Certification
+      </Button>
     </ProfileBackgroundBox>
   );
 };

@@ -66,16 +66,6 @@ const Navbar = () => {
               </IconButton>
             </Tooltip>
           )}
-          <Tooltip title="Add Certification">
-            <IconButton
-              size="large"
-              edge="end"
-              sx={{ color: "white", mr: "2px" }}
-              onClick={() => navigate("/add-certification")}
-            >
-              <WorkspacePremium fontSize="large" />
-            </IconButton>
-          </Tooltip>
           <IconButton
             size="large"
             edge="end"

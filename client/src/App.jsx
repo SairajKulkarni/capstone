@@ -68,7 +68,7 @@ const App = () => {
           <Route path="/profile" element={<Profile />}></Route>
           <Route path="/view/:id" element={<ViewProfile />}></Route>
           <Route path="/messages" element={<Messages />}></Route>
-          <Route path="/add-certification" element={<AddCertification />} />
+          <Route path="/certification" element={<AddCertification />} />
         </Route>
       </Routes>
     </BrowserRouter>
