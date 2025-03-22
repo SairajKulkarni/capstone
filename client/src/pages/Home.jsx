@@ -17,7 +17,6 @@ import {
   Grid2,
   IconButton,
   List,
-  ListItem,
   ListItemButton,
   Paper,
   Radio,
@@ -285,7 +284,7 @@ const ConnectionsSection = () => {
   }, [user.connections]);
 
   return (
-    <Paper elevation={3} style={{ height: "100%", width: "25%" }}>
+    <Paper elevation={3} style={{ height: "100%", width: "fit" }}>
       <Typography variant="h6" align="center" padding={2}>
         Your Connections
       </Typography>

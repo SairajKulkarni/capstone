@@ -9,10 +9,9 @@ import {
   Menu,
   MenuItem,
   Toolbar,
-  Typography,
   Tooltip,
 } from "@mui/material";
-import { Chat, WorkspacePremium } from "@mui/icons-material";
+import { Chat } from "@mui/icons-material";
 
 import { useAuthStore } from "../store/useAuthStore";
 import UserAvatar from "./UserAvatar";

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
+import { useMediaQuery, useTheme } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {
   Box,
@@ -24,21 +24,27 @@ import UserAvatar from "../components/UserAvatar";
 
 const Messages = () => {
   const [selectedConnection, setSelectedConnection] = useState(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   return (
     <Box
       sx={{
         display: "flex",
+        flexDirection: isMobile ? "column" : "row",
         height: "calc(100vh - 64px)",
         overflow: "hidden",
         backgroundColor: "#f0f2f5",
       }}
     >
-      <ConnectionsList
-        selectedConnection={selectedConnection}
-        setSelectedConnection={setSelectedConnection}
-      />
-      <ChatWindow selectedConnection={selectedConnection} />
+      {!isMobile || !selectedConnection ? (
+        <ConnectionsList
+          selectedConnection={selectedConnection}
+          setSelectedConnection={setSelectedConnection}
+        />
+      ) : null}
+      <ChatWindow selectedConnection={selectedConnection}
+      setSelectedConnection={setSelectedConnection} />
     </Box>
   );
 };
@@ -76,8 +82,8 @@ const ConnectionsList = ({ selectedConnection, setSelectedConnection }) => {
   return (
     <Paper
       sx={{
-        width: "25%",
-        height: "100%",
+        width: { xs: "100%", sm: "30%" },
+        height: { xs: "50vh", sm: "100%" },
         overflowY: "auto",
         borderRight: "1px solid #ddd",
         padding: 2,
@@ -88,43 +94,17 @@ const ConnectionsList = ({ selectedConnection, setSelectedConnection }) => {
         Users
       </Typography>
       {connectionsLoading ? (
-        <Box
-          width="100%"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: "20px",
-          }}
-        >
+        <Box display="flex" justifyContent="center" mt={2}>
           <CircularProgress />
         </Box>
       ) : connectionsError ? (
-        <Box
-          width="100%"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: "20px",
-          }}
-        >
-          <Typography> An error occurred.</Typography>
-        </Box>
+        <Typography align="center">An error occurred.</Typography>
       ) : connections.length === 0 ? (
-        <Box
-          width="100%"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: "20px",
-          }}
-        >
-          <Typography>You have no connections yet.</Typography>
-        </Box>
+        <Typography align="center">You have no connections yet.</Typography>
       ) : (
         <List>
           {connections.map((user) => (
             <ListItemButton
-              disableGutters
               key={user._id}
               onClick={() => handleUserClick(user)}
               sx={{
@@ -144,7 +124,7 @@ const ConnectionsList = ({ selectedConnection, setSelectedConnection }) => {
               </ListItemAvatar>
               <ListItemText
                 primary={user.name}
-                secondary={onlineUsers.includes(user._id) ? "Online" : ""}
+                secondary={onlineUsers.includes(user._id) ? "Online" : "Offline"}
               />
             </ListItemButton>
           ))}
@@ -159,12 +139,12 @@ ConnectionsList.propTypes = {
   setSelectedConnection: PropTypes.func.isRequired,
 };
 
-const ChatWindow = ({ selectedConnection }) => {
+const ChatWindow = ({ selectedConnection, setSelectedConnection }) => {
   const [chats, setChats] = useState([]);
   const [text, setText] = useState("");
   const [image, setImage] = useState("");
   const { socket } = useAuthStore();
-
+  const isMobile = useMediaQuery("(max-width:600px)");
   const [chatsLoading, setChatsLoading] = useState(true);
   const [chatsError, setChatsError] = useState(false);
 
@@ -240,14 +220,11 @@ const ChatWindow = ({ selectedConnection }) => {
     >
       <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
         {/* Back Arrow */}
-        <IconButton
-          onClick={() => navigate("/")} // Redirect to Home page
-          sx={{
-            marginRight: 2,
-          }}
-        >
-          <ArrowBackIcon />
-        </IconButton>
+        {isMobile && selectedConnection && (
+          <IconButton onClick={() => setSelectedConnection(null)}>
+            <ArrowBackIcon />
+          </IconButton>
+        )}
         <Typography variant="h6">
           {selectedConnection
             ? `Chat with ${selectedConnection.name}`
