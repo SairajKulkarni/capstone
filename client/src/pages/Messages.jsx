@@ -43,8 +43,10 @@ const Messages = () => {
           setSelectedConnection={setSelectedConnection}
         />
       ) : null}
-      <ChatWindow selectedConnection={selectedConnection}
-      setSelectedConnection={setSelectedConnection} />
+      <ChatWindow
+        selectedConnection={selectedConnection}
+        setSelectedConnection={setSelectedConnection}
+      />
     </Box>
   );
 };
@@ -124,7 +126,9 @@ const ConnectionsList = ({ selectedConnection, setSelectedConnection }) => {
               </ListItemAvatar>
               <ListItemText
                 primary={user.name}
-                secondary={onlineUsers.includes(user._id) ? "Online" : "Offline"}
+                secondary={
+                  onlineUsers.includes(user._id) ? "Online" : "Offline"
+                }
               />
             </ListItemButton>
           ))}
@@ -149,8 +153,6 @@ const ChatWindow = ({ selectedConnection, setSelectedConnection }) => {
   const [chatsError, setChatsError] = useState(false);
 
   const chatEndRef = useRef(null);
-
-  const navigate = useNavigate();
 
   const { enqueueSnackbar } = useSnackbar();
 

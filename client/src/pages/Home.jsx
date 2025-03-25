@@ -11,6 +11,7 @@ import {
   CardContent,
   CardHeader,
   CircularProgress,
+  Drawer,
   FormControl,
   FormControlLabel,
   FormHelperText,
@@ -18,12 +19,14 @@ import {
   IconButton,
   List,
   ListItemButton,
+  ListItemText,
   Paper,
   Radio,
   RadioGroup,
   Skeleton,
   TextField,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 import styled from "@emotion/styled";
 import { Delete } from "@mui/icons-material";
@@ -215,7 +218,7 @@ const Home = () => {
   );
 };
 
-const ConnectionsSection = () => {
+const ConnectionsSection = ({ drawerOpen, toggleDrawer }) => {
   const [connections, setConnections] = useState([]);
   const [connectionsLoading, setConnectionsLoading] = useState(true);
   const [connectionsError, setConnectionsError] = useState(false);
@@ -223,6 +226,8 @@ const ConnectionsSection = () => {
   const { user, setUser } = useAuthStore();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
+
+  const isMobile = useMediaQuery("(max-width: 700px)");
 
   const handleDisconnect = async (id, name) => {
     try {
@@ -283,57 +288,32 @@ const ConnectionsSection = () => {
     getConnections();
   }, [user.connections]);
 
-  return (
-    <Paper elevation={3} style={{ height: "100%", width: "fit" }}>
-      <Typography variant="h6" align="center" padding={2}>
+  const ConnectionsList = (
+    <Box sx={{ width: 250, p: 2 }}>
+      <Typography variant="h6" align="center">
         Your Connections
       </Typography>
       {connectionsLoading ? (
-        <Box
-          width="100%"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: "20px",
-          }}
-        >
+        <Box display="flex" justifyContent="center" mt={2}>
           <CircularProgress />
         </Box>
       ) : connectionsError ? (
-        <Box
-          width="100%"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: "20px",
-          }}
-        >
-          <Typography> An error occurred.</Typography>
-        </Box>
+        <Typography align="center">An error occurred.</Typography>
       ) : connections.length === 0 ? (
-        <Box
-          width="100%"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: "20px",
-          }}
-        >
-          <Typography>You have no connections yet.</Typography>
-        </Box>
+        <Typography align="center">You have no connections yet.</Typography>
       ) : (
-        <List style={{ height: "90%", overflowY: "auto" }}>
+        <List>
           {connections.map((conn) => (
             <ListItemButton
               key={conn._id}
-              style={{ display: "flex", width: "100%" }}
-              onClick={() => {
-                navigate(`/view/${conn._id}`);
-              }}
+              onClick={() => navigate(`/view/${conn._id}`)}
             >
-              <UserAvatar user={conn} style={{ mr: 3 }} />
-              <Typography sx={{ flexGrow: 1 }}>{conn.name}</Typography>
-              <Typography mr={2}>{conn.score}</Typography>
+              <UserAvatar user={conn} sx={{ mr: 2 }} />
+              <ListItemText
+                sx={{ ml: 2 }}
+                primary={conn.name}
+                secondary={`Score: ${conn.score}`}
+              />
               <IconButton onClick={() => handleDisconnect(conn._id, conn.name)}>
                 <Delete />
               </IconButton>
@@ -341,8 +321,23 @@ const ConnectionsSection = () => {
           ))}
         </List>
       )}
-      {/* </Box> */}
-    </Paper>
+    </Box>
+  );
+
+  return (
+    <>
+      {/* Desktop View */}
+      {!isMobile && (
+        <Paper elevation={3} sx={{ height: "100%", width: "fit" }}>
+          {ConnectionsList}
+        </Paper>
+      )}
+
+      {/* Mobile Drawer */}
+      <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer}>
+        {ConnectionsList}
+      </Drawer>
+    </>
   );
 };
 
