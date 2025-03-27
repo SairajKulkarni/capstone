@@ -15,13 +15,18 @@ import {
   Autocomplete,
   Box,
   Button,
+  Chip,
   CircularProgress,
   Divider,
+  Grid2,
   IconButton,
+  List,
+  ListItem,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
+import CheckIcon from "@mui/icons-material/Check";
 
 import { useSnackbar } from "notistack";
 import { useAuthStore } from "../store/useAuthStore";
@@ -29,8 +34,7 @@ import { skills } from "../utils/dummyData";
 import UserAvatar from "../components/UserAvatar";
 
 const ProfileBackgroundBox = styled(Box)({
-  height: "calc(100vh - 64px)",
-  // width: "100vw",
+  marginTop: "66px",
   display: "flex",
   flexDirection: "column",
   justifyContent: "center",
@@ -68,6 +72,8 @@ const Profile = () => {
       <Divider />
       <SkillsSection enqueueSnackbar={enqueueSnackbar} />
 
+      <CertificatesSection />
+
       <Button
         variant="contained"
         color="primary"
@@ -85,7 +91,7 @@ const NameSection = ({ enqueueSnackbar }) => {
   const [editingName, setEditingName] = useState(false);
   const [nameLoading, setNameLoading] = useState(false);
   const [userName, setUserName] = useState(user.name);
-
+  console.log(user);
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -353,6 +359,59 @@ const SkillsSection = ({ enqueueSnackbar }) => {
 
 SkillsSection.propTypes = {
   enqueueSnackbar: PropTypes.func,
+};
+
+const CertificatesSection = () => {
+  const { user } = useAuthStore();
+
+  return (
+    <Box>
+      <Typography>Your certificates:</Typography>
+      <List>
+        {user.certificates.map((certi) => (
+          <ListItem
+            key={certi._id}
+            sx={{ border: "2px solid black", margin: "10px 0px" }}
+          >
+            <Grid2 container spacing={3}>
+              <Grid2>
+                <Typography fontSize={"24px"} fontWeight={600}>
+                  {certi.certName}
+                </Typography>
+                <Typography>{certi.organization}</Typography>
+              </Grid2>
+              <Grid2>
+                <Typography>ID: {certi.certificateId}</Typography>
+                <Box sx={{ display: "flex", gap: "20px" }}>
+                  <Typography>
+                    Issue Date: {new Date(certi.issueDate).toLocaleDateString()}
+                  </Typography>
+                  {certi.expiryDate ? (
+                    <Typography>
+                      Expiry Date:{" "}
+                      {new Date(certi.expiryDate).toLocaleDateString()}
+                    </Typography>
+                  ) : (
+                    <Typography>Does not expire</Typography>
+                  )}
+                </Box>
+              </Grid2>
+              <Grid2>
+                {certi.isVerified && (
+                  <Chip
+                    label="Verified"
+                    color="success"
+                    icon={<CheckIcon />}
+                    sx={{ fontSize: "16px" }}
+                  />
+                )}
+              </Grid2>
+            </Grid2>
+          </ListItem>
+        ))}
+      </List>{" "}
+    </Box>
+  );
 };
 
 export default Profile;

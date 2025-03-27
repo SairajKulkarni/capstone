@@ -18,12 +18,13 @@ import { useAuthStore } from "../store/useAuthStore";
 import { useSnackbar } from "notistack";
 
 const ViewProfileBackgroundBox = styled(Box)({
-  height: "calc(100vh - 64px)",
+  minHeight: "calc(100vh - 64px)",
   display: "flex",
   flexDirection: "column",
   justifyContent: "center",
   alignItems: "center",
   gap: "20px",
+  padding: "30px 0px"
 });
 
 const ViewProfile = () => {

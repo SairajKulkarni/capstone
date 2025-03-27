@@ -57,6 +57,8 @@ const Home = () => {
   const { user, setUser } = useAuthStore();
   const navigate = useNavigate();
 
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
   const handleConnectClick = async (id, name) => {
     // Get response from API call
     try {
@@ -117,7 +119,13 @@ const Home = () => {
         <ConnectionsSection />
 
         {/* Main content */}
-        <Box style={{ height: "100%", width: "75%", padding: "20px" }}>
+        <Box
+          style={{
+            height: "100%",
+            width: isMobile ? "100%" : "75%",
+            padding: "20px",
+          }}
+        >
           {/* Form to get user recommendations. State functions passed to set values */}
           <RecommendationsForm
             setRecommendationsLoading={setRecommendationsLoading}
@@ -227,7 +235,7 @@ const ConnectionsSection = ({ drawerOpen, toggleDrawer }) => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
 
-  const isMobile = useMediaQuery("(max-width: 700px)");
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   const handleDisconnect = async (id, name) => {
     try {
@@ -353,6 +361,8 @@ const RecommendationsForm = ({
   const { user } = useAuthStore();
   const userId = user._id;
 
+  const isMobile = useMediaQuery("(max-width: 700px)");
+
   const handleRadioChange = (e) => {
     setSearchType(Number(e.target.value));
     setRecommendedUsers([]);
@@ -415,7 +425,14 @@ const RecommendationsForm = ({
   return (
     <form autoComplete="off" onSubmit={handleSubmit}>
       <FormControl>
-        <Box style={{ display: "flex", gap: "20px", alignItems: "center" }}>
+        <Box
+          style={{
+            display: "flex",
+            gap: "20px",
+            alignItems: isMobile ? "auto" : "center",
+            flexDirection: isMobile ? "column" : "row",
+          }}
+        >
           <Typography variant="h6">Recommend By</Typography>
           <RadioGroup row value={searchType} onChange={handleRadioChange}>
             <FormControlLabel value={0} control={<Radio />} label="Interest" />
@@ -423,7 +440,14 @@ const RecommendationsForm = ({
             <FormControlLabel value={2} control={<Radio />} label="Both" />
           </RadioGroup>
         </Box>
-        <Box style={{ display: "flex", gap: "20px", alignItems: "center" }}>
+        <Box
+          style={{
+            display: "flex",
+            gap: "20px",
+            alignItems: isMobile ? "auto" : "center",
+            flexDirection: isMobile ? "column" : "row",
+          }}
+        >
           <Autocomplete
             multiple
             freeSolo

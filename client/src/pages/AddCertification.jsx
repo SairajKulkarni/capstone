@@ -6,9 +6,17 @@ import {
   Typography,
   Paper,
   CircularProgress,
+  useMediaQuery,
 } from "@mui/material";
+import dayjs from "dayjs";
+import "dayjs/locale/en-gb";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { MobileDatePicker } from "@mui/x-date-pickers/MobileDatePicker";
+import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import { useSnackbar } from "notistack";
 import axios from "axios";
+import { useAuthStore } from "../store/useAuthStore";
 
 const AddCertification = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -17,43 +25,62 @@ const AddCertification = () => {
     certName: "",
     organization: "",
     certId: "",
-    certUrl: "",
-    issueDate: "",
-    expiryDate: "",
-    file: null,
+    issueDate: dayjs(),
+    expiryDate: dayjs(),
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
+  const { user, setUser } = useAuthStore();
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: files ? files[0] : value,
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-
     try {
-      const data = new FormData();
-      Object.keys(formData).forEach((key) => {
-        data.append(key, formData[key]);
+      const apiResponse = await axios.post(
+        "/api/verify/verify",
+        { ...formData },
+        { withCredentials: true }
+      );
+      enqueueSnackbar("Certificate successfully uploaded", {
+        variant: "success",
       });
-
-      const response = await axios.post("/api/certifications/add", data, {
-        headers: { "Content-Type": "multipart/form-data" },
-        withCredentials: true,
+      setUser((prev) => {
+        return {
+          ...prev,
+          certificates: [...prev.certificates, apiResponse.data.newCertificate],
+        };
       });
-
-      enqueueSnackbar("Certification uploaded successfully!", { variant: "success" });
-      // Optional: Redirect or clear form
-    } catch (err) {
-      enqueueSnackbar("Error uploading certification", { variant: "error" });
+      setFormData({
+        certName: "",
+        organization: "",
+        certId: "",
+        issueDate: dayjs(),
+        expiryDate: dayjs(),
+      });
+    } catch (error) {
+      if (error.status === 401) {
+        enqueueSnackbar(
+          "Either you are not the owner or the certificate expired",
+          { variant: "error" }
+        );
+      } else if (error.status === 404) {
+        enqueueSnackbar("Certificate not found", { variant: "error" });
+      } else {
+        enqueueSnackbar("Internal Server Error", { variant: "error" });
+      }
     } finally {
       setIsSubmitting(false);
+      console.log(user);
     }
   };
 
@@ -69,66 +96,106 @@ const AddCertification = () => {
       <Typography variant="h5" mb={2}>
         Add New Certification
       </Typography>
-      <form onSubmit={handleSubmit} encType="multipart/form-data">
-        <TextField
-          fullWidth
-          label="Certificate Name"
-          name="certName"
-          margin="normal"
-          value={formData.certName}
-          onChange={handleChange}
-          required
-        />
-        <TextField
-          fullWidth
-          label="Issuing Organization"
-          name="organization"
-          margin="normal"
-          value={formData.organization}
-          onChange={handleChange}
-          required
-        />
-        <TextField
-          fullWidth
-          label="Certificate ID"
-          name="certId"
-          margin="normal"
-          value={formData.certId}
-          onChange={handleChange}
-          required
-        />
-        <TextField
-          fullWidth
-          type="date"
-          label="Issue Date"
-          name="issueDate"
-          margin="normal"
-          InputLabelProps={{ shrink: true }}
-          value={formData.issueDate}
-          onChange={handleChange}
-        />
-        <TextField
-          fullWidth
-          type="date"
-          label="Expiry Date (Optional)"
-          name="expiryDate"
-          margin="normal"
-          InputLabelProps={{ shrink: true }}
-          value={formData.expiryDate}
-          onChange={handleChange}
-        />
-
-        <Button
-          type="submit"
-          variant="contained"
-          color="primary"
-          fullWidth
-          sx={{ mt: 3 }}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? <CircularProgress size={24} /> : "Submit"}
-        </Button>
-      </form>
+      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-gb">
+        <form onSubmit={handleSubmit} encType="multipart/form-data">
+          <TextField
+            fullWidth
+            label="Certificate Name"
+            name="certName"
+            margin="normal"
+            value={formData.certName}
+            onChange={handleChange}
+            required
+          />
+          <TextField
+            fullWidth
+            label="Issuing Organization"
+            name="organization"
+            margin="normal"
+            value={formData.organization}
+            onChange={handleChange}
+            required
+          />
+          <TextField
+            fullWidth
+            label="Certificate ID"
+            name="certId"
+            margin="normal"
+            value={formData.certId}
+            onChange={handleChange}
+            required
+          />
+          {isMobile ? (
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "20px",
+                marginTop: "16px",
+                marginBottom: "8px",
+              }}
+            >
+              <MobileDatePicker
+                // fullWidth
+                required
+                label={"Issue Date"}
+                name="issueDate"
+                value={formData.issueDate}
+                onChange={(newValue) =>
+                  setFormData((prev) => ({ ...prev, issueDate: newValue }))
+                }
+              />
+              <MobileDatePicker
+                // fullWidth
+                label={"Expiry Date (Optional)"}
+                name="expiryDate"
+                value={formData.expiryDate}
+                onChange={(newValue) =>
+                  setFormData((prev) => ({ ...prev, expiryDate: newValue }))
+                }
+              />
+            </Box>
+          ) : (
+            <Box
+              sx={{
+                display: "flex",
+                width: "100%",
+                justifyContent: "space-between",
+                marginTop: "16px",
+                marginBottom: "8px",
+              }}
+            >
+              <DesktopDatePicker
+                required
+                label={"Issue Date"}
+                name="issueDate"
+                value={formData.issueDate}
+                onChange={(newValue) =>
+                  setFormData((prev) => ({ ...prev, issueDate: newValue }))
+                }
+              />
+              <DesktopDatePicker
+                label={"Expiry Date (Optional)"}
+                name="expiryDate"
+                value={formData.expiryDate}
+                onChange={(newValue) =>
+                  setFormData((prev) => ({ ...prev, expiryDate: newValue }))
+                }
+              />
+            </Box>
+          )}
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            sx={{ mt: 3 }}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? <CircularProgress size={24} /> : "Submit"}
+          </Button>
+        </form>
+      </LocalizationProvider>
     </Box>
   );
 };

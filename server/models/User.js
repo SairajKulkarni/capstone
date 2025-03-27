@@ -13,6 +13,10 @@ const userSchema = new mongoose.Schema(
       type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
       default: [],
     },
+    certificates: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Certificate" }],
+      default: [],
+    },
   },
   { timestamps: true }
 );

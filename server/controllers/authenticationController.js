@@ -9,7 +9,10 @@ export const login = async (req, res) => {
       .json({ message: "Username and password are required." });
   }
   try {
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ username }).populate(
+      "certificates",
+      "-__v -owner"
+    );
     if (!user || !(await user.comparePassword(password))) {
       return res.status(401).json({ message: "Invalid username or password." });
     }
@@ -33,9 +36,11 @@ export const login = async (req, res) => {
         skills: user.skills,
         connections: user.connections,
         profilePic: user.profilePic,
+        certificates: user.certificates || [],
       },
     });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Login failed.", error });
   }
 };
@@ -72,6 +77,7 @@ export const logout = (req, res) => {
 
 export const checkAuth = (req, res) => {
   try {
+    console.log(req.user);
     res.status(200).json(req.user);
   } catch (error) {
     res.status(400).json({ message: "Error in authorisation", error });
