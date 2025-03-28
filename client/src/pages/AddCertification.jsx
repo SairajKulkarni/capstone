@@ -7,6 +7,8 @@ import {
   Paper,
   CircularProgress,
   useMediaQuery,
+  Autocomplete,
+  FormHelperText,
 } from "@mui/material";
 import dayjs from "dayjs";
 import "dayjs/locale/en-gb";
@@ -17,13 +19,17 @@ import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import { useSnackbar } from "notistack";
 import axios from "axios";
 import { useAuthStore } from "../store/useAuthStore";
+import organizations from "../utils/organizations";
 
 const AddCertification = () => {
   const { enqueueSnackbar } = useSnackbar();
 
   const [formData, setFormData] = useState({
     certName: "",
-    organization: "",
+    organization: {
+      label: "",
+      value: "",
+    },
     certId: "",
     issueDate: dayjs(),
     expiryDate: dayjs(),
@@ -46,6 +52,7 @@ const AddCertification = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      console.log(formData);
       const apiResponse = await axios.post(
         "/api/verify/verify",
         { ...formData },
@@ -62,13 +69,21 @@ const AddCertification = () => {
       });
       setFormData({
         certName: "",
-        organization: "",
+        organization: {
+          label: "",
+          value: "",
+        },
         certId: "",
         issueDate: dayjs(),
         expiryDate: dayjs(),
       });
     } catch (error) {
-      if (error.status === 401) {
+      if (error.status === 400) {
+        enqueueSnackbar(
+          "No organization found. Make sure to press Enter after typing the organization name",
+          { variant: "error" }
+        );
+      } else if (error.status === 401) {
         enqueueSnackbar(
           "Either you are not the owner or the certificate expired",
           { variant: "error" }
@@ -80,7 +95,6 @@ const AddCertification = () => {
       }
     } finally {
       setIsSubmitting(false);
-      console.log(user);
     }
   };
 
@@ -107,15 +121,46 @@ const AddCertification = () => {
             onChange={handleChange}
             required
           />
-          <TextField
-            fullWidth
-            label="Issuing Organization"
-            name="organization"
-            margin="normal"
+          <Autocomplete
+            freeSolo
+            options={organizations}
+            // getOptionLabel={(option) => option.label}
             value={formData.organization}
-            onChange={handleChange}
-            required
+            onChange={(e, value) => {
+              const org = organizations.find(
+                (obj) => obj.value === value?.value
+              );
+              if (org) {
+                setFormData((prev) => ({
+                  ...prev,
+                  organization: {
+                    label: org.label,
+                    value: org.value,
+                  },
+                }));
+              } else {
+                let titleArray = value.split(" ");
+                titleArray = titleArray.map(
+                  (word) => word[0].toUpperCase() + word.slice(1)
+                );
+                const title = titleArray.join(" ");
+                setFormData((prev) => ({
+                  ...prev,
+                  organization: {
+                    label: title,
+                    value: value.replaceAll(" ", "").toLowerCase(),
+                  },
+                }));
+              }
+            }}
+            renderInput={(params) => (
+              <TextField {...params} label="Issuing Organization" />
+            )}
           />
+          <FormHelperText>
+            If organization not found, type it and press Enter to add it
+            manually.
+          </FormHelperText>
           <TextField
             fullWidth
             label="Certificate ID"

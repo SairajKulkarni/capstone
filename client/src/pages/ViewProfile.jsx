@@ -3,6 +3,7 @@ import axios from "axios";
 import {
   Box,
   Button,
+  Chip,
   CircularProgress,
   Grid2,
   List,
@@ -16,6 +17,7 @@ import UserAvatar from "../components/UserAvatar";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
 import { useSnackbar } from "notistack";
+import CheckIcon from "@mui/icons-material/Check";
 
 const ViewProfileBackgroundBox = styled(Box)({
   minHeight: "calc(100vh - 64px)",
@@ -24,7 +26,7 @@ const ViewProfileBackgroundBox = styled(Box)({
   justifyContent: "center",
   alignItems: "center",
   gap: "20px",
-  padding: "30px 0px"
+  padding: "30px 0px",
 });
 
 const ViewProfile = () => {
@@ -231,6 +233,65 @@ const ViewProfile = () => {
               </List>
             </Box>
           </Grid2>
+          <Box>
+            <Typography fontSize="21px" mr="7px">
+              Certifications:
+            </Typography>
+            <List
+              sx={{
+                overflow: "auto",
+                width: 350,
+                maxHeight: 300,
+                border: "2px solid black",
+                padding: "10px"
+              }}
+            >
+              {viewUser.certificates
+                .filter((conn) => conn._id !== user._id)
+                .map((certi) => (
+                  <ListItem
+                    key={certi._id}
+                    sx={{ border: "2px solid black", margin: "10px 0px" }}
+                  >
+                    <Grid2 container spacing={1}>
+                      <Grid2>
+                        <Typography fontSize={"24px"} fontWeight={600}>
+                          {certi.certName}
+                        </Typography>
+                        <Typography>{certi.organization}</Typography>
+                      </Grid2>
+                      <Grid2>
+                        <Typography>ID: {certi.certificateId}</Typography>
+                        <Box sx={{ display: "flex", gap: "20px" }}>
+                          <Typography>
+                            Issue Date:{" "}
+                            {new Date(certi.issueDate).toLocaleDateString()}
+                          </Typography>
+                          {certi.expiryDate ? (
+                            <Typography>
+                              Expiry Date:{" "}
+                              {new Date(certi.expiryDate).toLocaleDateString()}
+                            </Typography>
+                          ) : (
+                            <Typography>Does not expire</Typography>
+                          )}
+                        </Box>
+                      </Grid2>
+                      <Grid2>
+                        {certi.isVerified && (
+                          <Chip
+                            label="Verified"
+                            color="success"
+                            icon={<CheckIcon />}
+                            sx={{ fontSize: "16px" }}
+                          />
+                        )}
+                      </Grid2>
+                    </Grid2>
+                  </ListItem>
+                ))}
+            </List>
+          </Box>
         </>
       )}
     </ViewProfileBackgroundBox>

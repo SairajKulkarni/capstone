@@ -30,7 +30,7 @@ import CheckIcon from "@mui/icons-material/Check";
 
 import { useSnackbar } from "notistack";
 import { useAuthStore } from "../store/useAuthStore";
-import { skills } from "../utils/dummyData";
+import skills from "../utils/skills";
 import UserAvatar from "../components/UserAvatar";
 
 const ProfileBackgroundBox = styled(Box)({

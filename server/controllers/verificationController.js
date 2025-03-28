@@ -88,9 +88,12 @@ export const verifyCeriticate = async (req, res) => {
   let verificationResponse = 200;
   let isVerified = false;
 
+  if(!organization.value)
+    return res.status(400).json({message: "No organization"});
+
   try {
-    if (availableOrganisations.includes(organization)) {
-      verificationResponse = await verificationAPIs[organization](
+    if (availableOrganisations.includes(organization.value)) {
+      verificationResponse = await verificationAPIs[organization.value](
         certId,
         req.user.name
       );
@@ -101,14 +104,14 @@ export const verifyCeriticate = async (req, res) => {
         const newCertificate = new Certificate({
           owner: req.user.id,
           certName: certName,
-          organization: organization,
+          organization: organization.label,
           certificateId: certId,
           issueDate: issueDate,
           expiryDate: expiryDate,
           isVerified: isVerified,
         });
         await newCertificate.save();
-        console.log(newCertificate);
+        // console.log(newCertificate);
         const updatedUser = await User.findByIdAndUpdate(
           req.user.id,
           {
@@ -129,7 +132,7 @@ export const verifyCeriticate = async (req, res) => {
         break;
     }
   } catch (error) {
-    console.error("Error verifying", error);
+    // console.error("Error verifying", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };

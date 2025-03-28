@@ -71,6 +71,7 @@ export const getUserProfile = async (req, res) => {
     // Find the user by ID and populate connections
     const user = await User.findById(id)
       .populate("connections", "name score profilePic")
+      .populate("certificates")
       .select("-password -__v"); // Exclude password and version fields
 
     if (!user) {
@@ -85,6 +86,7 @@ export const getUserProfile = async (req, res) => {
         score: user.score,
         skills: user.skills,
         connections: user.connections,
+        certificates: user.certificates,
       },
     });
   } catch (error) {

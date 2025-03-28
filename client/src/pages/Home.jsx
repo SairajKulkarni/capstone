@@ -33,7 +33,7 @@ import { Delete } from "@mui/icons-material";
 
 import { useSnackbar } from "notistack";
 import { useAuthStore } from "../store/useAuthStore.js";
-import { skills } from "../utils/dummyData.js";
+import skills from "../utils/skills";
 import stringAvatar from "../utils/avatarString.js";
 import UserAvatar from "../components/UserAvatar.jsx";
 import { useNavigate } from "react-router-dom";
